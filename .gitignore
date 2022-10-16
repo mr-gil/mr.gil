@@ -1,0 +1,10 @@
+# Folders
+lib/
+typings/
+node_modules/
+
+
+# Other
+**/*.tgz
+test.js
+gitpush.sh
