@@ -68,7 +68,7 @@ export class Collection extends Map {
 
   fetch(id: string, {}, {}): Promise<any> {
     return new Promise((resolve, reject) => {
-      let f = this.get(id);
+      const f = this.get(id);
       resolve(f);
     });
   }
@@ -84,16 +84,16 @@ export class ChannelCollection extends Collection {
     return new Promise(async (resolve, reject) => {
       let f: AnyChannel = this.get(id);
       if (!f) {
-        let { channel }: { channel: APIChannel } = await this.client.rest.get(
+        const { channel }: { channel: APIChannel } = await this.client.rest.get(
           Routes.channel(id)
         );
         if (!channel || !channel.id) return reject("Unknown Channel");
 
-        let newObj = (new ChatChannel(
+        const newObj = new ChatChannel(
           channel,
           { server: await this.client.servers.fetch(channel.serverId) },
           this.client
-        ) as AnyChannel);
+        ) as AnyChannel;
 
         if (!newObj || !newObj.id) return reject("Unknown Channel");
 
@@ -112,12 +112,12 @@ export class ServerCollection extends Collection {
     return new Promise(async (resolve, reject) => {
       let f: BaseServer = this.get(id);
       if (!f) {
-        let { server }: { server: APIServer } = await this.client.rest.get(
+        const { server }: { server: APIServer } = await this.client.rest.get(
           Routes.server(id)
         );
         if (!server || !server.id) return reject("Unknown Server");
 
-        let newObj = new BaseServer(server);
+        const newObj = new BaseServer(server);
 
         if (!newObj || !newObj.id) return reject("Unknown Server");
 
@@ -131,20 +131,17 @@ export class ServerCollection extends Collection {
 }
 
 export class MemberCollection extends Collection {
-  fetch(
-    id: string,
-    serverId: string
-  ): Promise<Member> {
+  fetch(id: string, serverId: string): Promise<Member> {
     return new Promise(async (resolve, reject) => {
       let f = this.get(id);
       if (!f) {
-        let { member }: { member: APIServerMember } =
+        const { member }: { member: APIServerMember } =
           await this.client.rest.get(Routes.serverMember(serverId, id));
 
         if (!member || !member.user) return reject("Unknown User/Member");
-        let newObj = new Member(member, {
+        const newObj = new Member(member, {
           server: await this.client.servers.fetch(serverId),
-          user: await this.client.users.fetch({}, member.user)
+          user: await this.client.users.fetch({}, member.user),
         });
 
         if (!newObj || !newObj.id) return reject("Unknown User/Member");
@@ -163,7 +160,7 @@ export class UserCollection extends Collection {
     return new Promise(async (resolve, reject) => {
       let f = this.get(user.id);
       if (!f) {
-        let newObj = new User(user)
+        const newObj = new User(user);
 
         if (!newObj || !newObj.id) return reject("Unknown User");
 

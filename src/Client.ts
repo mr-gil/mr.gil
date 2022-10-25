@@ -50,7 +50,7 @@ export class Client extends EventEmitter {
   channels: ChannelCollection;
   members: MemberCollection;
   cacheSize: number;
-  cacheMessage: boolean
+  cacheMessage: boolean;
 
   /**
    * Constructor to create a new Client instance
@@ -82,8 +82,8 @@ export class Client extends EventEmitter {
       retryInterval: options?.restRetryInterval,
     });
     this.shards = [];
-    this.cacheSize = options?.cacheSize
-    this.cacheMessage = options?.cacheMessage
+    this.cacheSize = options?.cacheSize;
+    this.cacheMessage = options?.cacheMessage;
   }
 
   /**
@@ -123,7 +123,7 @@ export class Client extends EventEmitter {
     try {
       this.rest.setSecret(this.token);
 
-      let socket = new shard(this.url, this.shards.length, this, {
+      const socket = new shard(this.url, this.shards.length, this, {
         token: this.token,
       });
       this.readyTimestamp = socket.readyTimestamp();

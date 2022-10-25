@@ -2,7 +2,7 @@ import ws from "ws";
 import { Client } from "../Client";
 import { GuildedApiError } from "../errors/apiError";
 
-const version = "0.0.1"
+const version = "0.0.1";
 const userAgent = `Mr.Gil (guilded, ${version})`;
 
 export class shard extends ws {
@@ -48,7 +48,6 @@ export class shard extends ws {
     }
 
     this.on("open", () => {
-      
       this.client.readyTimestamp = Date.now();
     });
     this.on("message", (data) => {
@@ -56,7 +55,7 @@ export class shard extends ws {
         data.toString()
       );
 
-      let jsondata = { eventType, eventData };
+      const jsondata = { eventType, eventData };
       this.client.interact(jsondata);
     });
 
@@ -78,10 +77,10 @@ export class shard extends ws {
     )
       return this.emit("disconnect", this);
     this.reconnects++;
-    this.client.reconnect(this)
+    this.client.reconnect(this);
     this.emit("reconnect", this);
   }
-  
+
   get connected() {
     return this.readyState == ws.OPEN;
   }

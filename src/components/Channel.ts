@@ -83,7 +83,7 @@ export class ChatChannel extends BaseChannel implements AnyChannel {
     client: Client
   ) {
     super(channel, obj, client);
-    this.messages = new MessageManager(this)
+    this.messages = new MessageManager(this);
   }
 
   send(text: string | messageSend, options: messageSend): Promise<Message> {
@@ -112,12 +112,10 @@ export class ChatChannel extends BaseChannel implements AnyChannel {
 
     return new Promise(async (resolve, reject) => {
       try {
-        let { message }: { message: APIMessage } = await this.client.rest.post(
-          link,
-          {
+        const { message }: { message: APIMessage } =
+          await this.client.rest.post(link, {
             body: JSON.stringify(data),
-          }
-        );
+          });
         resolve(
           new Message(
             message,

@@ -55,7 +55,7 @@ export class RESTManager extends EventEmitter {
       if (options?.params)
         for (const [key, value] of Object.entries(options.params))
           searchParams.append(key, value.toString());
-      let req = request(
+      const req = request(
         {
           hostname: `www.guilded.gg`,
           path: `/api/v${this.version}` + path + searchParams,
@@ -63,7 +63,7 @@ export class RESTManager extends EventEmitter {
           headers: {
             "Content-Type": "application/json",
             "User-Agent": userAgent,
-            "Authorization": `Bearer ${this.token}`
+            Authorization: `Bearer ${this.token}`,
           },
         },
         async (response) => {
@@ -73,8 +73,8 @@ export class RESTManager extends EventEmitter {
           });
 
           response.on("data", (chunk) => {
-            body = body + chunk
-          
+            body = body + chunk;
+
             if (response.complete) {
               this.emit("raw", body, response);
               return body;
@@ -103,14 +103,12 @@ export class RESTManager extends EventEmitter {
             }
           });
         }
-      )
-        
-      req.on("error", reject)
-      if (options?.body)
-        req.write(options.body);
-      
+      );
+
+      req.on("error", reject);
+      if (options?.body) req.write(options.body);
+
       req.end(JSON.stringify);
-      
     });
   }
 
@@ -122,15 +120,15 @@ export class RESTManager extends EventEmitter {
   }
 
   post<R = any, B = any>(path: string, body?: B) {
-    return this.https<R, B>(path, "POST", body );
+    return this.https<R, B>(path, "POST", body);
   }
 
   patch<R = any, B = any>(path: string, body?: B) {
-    return this.https<R, B>(path, "PATCH", body );
+    return this.https<R, B>(path, "PATCH", body);
   }
 
   put<R = any, B = any>(path: string, body?: B) {
-    return this.https<R, B>(path, "PUT", body );
+    return this.https<R, B>(path, "PUT", body);
   }
 
   delete<R>(path: string) {

@@ -1,4 +1,8 @@
-import { APIMessage, APIMessageFetchManyOptions, Routes } from "guilded-api-typings";
+import {
+  APIMessage,
+  APIMessageFetchManyOptions,
+  Routes,
+} from "guilded-api-typings";
 import { Client } from "../Client";
 import { ChatChannel, Message } from "../components";
 import { Collection } from "../components/Collection";
@@ -8,7 +12,7 @@ export class MessageManager {
   client: Client;
 
   constructor(channel: ChatChannel, maxCache = Infinity) {
-    this.client = channel.client
+    this.client = channel.client;
     this.cache = new Collection([], {
       maxSize: channel.client.cacheSize || maxCache,
     });
@@ -35,7 +39,7 @@ export class MessageManager {
           Routes.message(channelId, IdOrOptions)
         );
 
-        let msg = new Message(
+        const msg = new Message(
           message,
           {
             server: await this.client.servers.fetch(message.serverId),
@@ -57,16 +61,17 @@ export class MessageManager {
         const ms: Message[] = [];
 
         messages.forEach(async (m: APIMessage) => {
-          let msg = new Message(m, {
-            server: await this.client.servers.fetch(m.serverId),
-            channel: await this.client.channels.fetch(m.channelId),
-            member: await this.client.members.fetch(m.createdBy, m.serverId)
-          },
+          const msg = new Message(
+            m,
+            {
+              server: await this.client.servers.fetch(m.serverId),
+              channel: await this.client.channels.fetch(m.channelId),
+              member: await this.client.members.fetch(m.createdBy, m.serverId),
+            },
             this.client
-          )
+          );
 
-          ms.push(msg)
-          
+          ms.push(msg);
         });
         return resolve(ms);
       }

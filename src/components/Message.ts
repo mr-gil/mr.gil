@@ -68,7 +68,7 @@ export class Message {
     client: Client,
     cache = client.cacheMessage ?? true
   ) {
-    let {
+    const {
       mentions,
       id,
       createdAt,
@@ -88,7 +88,7 @@ export class Message {
       writable: true,
       value: message,
     });
-    this.id = id
+    this.id = id;
     this.content = message.content;
     this.private = isPrivate;
     this.silent = isSilent;
@@ -103,7 +103,7 @@ export class Message {
 
     this.replies = replyMessageIds;
 
-    if(cache) this.channel.messages.cache.set(this.id, this)
+    if (cache) this.channel.messages.cache.set(this.id, this);
   }
 
   get channelUrl() {
@@ -150,11 +150,11 @@ export class Message {
 
     return new Promise(async (resolve, reject) => {
       try {
-        let { message } = await this.client.rest.post(link, {
+        const { message } = await this.client.rest.post(link, {
           body: JSON.stringify(data),
         });
 
-        let m = new Message(
+        const m = new Message(
           message,
           {
             server: await this.client.servers.fetch(message.serverId),
