@@ -12,7 +12,7 @@ export class RESTManager extends EventEmitter {
   token?: string;
   readonly version?: number;
   readonly proxyUrl?: string;
-  client: any;
+  client: Client;
 
   constructor(public readonly options: RESTOptions) {
     super();
@@ -55,7 +55,7 @@ export class RESTManager extends EventEmitter {
       if (options?.params)
         for (const [key, value] of Object.entries(options.params))
           searchParams.append(key, value.toString());
-      return request(
+      let req = request(
         {
           hostname: `www.guilded.gg`,
           path: `/api/v${this.version}` + path + searchParams,
@@ -67,18 +67,17 @@ export class RESTManager extends EventEmitter {
           },
         },
         async (response) => {
-          var data: any = [];
+          var body = "";
           response.on("error", (error: APIError) => {
             throw new GuildedApiError(error);
           });
 
           response.on("data", (chunk) => {
-            console.log(this.token)
-            data.push(Buffer.from(chunk));
-
+            body = body + chunk
+          
             if (response.complete) {
-              this.emit("raw", data, response);
-              return data as R;
+              this.emit("raw", body, response);
+              return body;
             }
           });
 
@@ -98,15 +97,20 @@ export class RESTManager extends EventEmitter {
 
           response.on("end", () => {
             try {
-              resolve(JSON.parse(data[0] ? data[0] : "{}"));
+              resolve(JSON.parse(body));
             } catch (e: any) {
               throw new GilError(e);
             }
           });
         }
       )
-        .on("error", reject)
-        .end(JSON.stringify);
+        
+      req.on("error", reject)
+      if (options?.body)
+        req.write(options.body);
+      
+      req.end(JSON.stringify);
+      
     });
   }
 
@@ -118,15 +122,15 @@ export class RESTManager extends EventEmitter {
   }
 
   post<R = any, B = any>(path: string, body?: B) {
-    return this.https<R, B>(path, "POST", { body });
+    return this.https<R, B>(path, "POST", body );
   }
 
   patch<R = any, B = any>(path: string, body?: B) {
-    return this.https<R, B>(path, "PATCH", { body });
+    return this.https<R, B>(path, "PATCH", body );
   }
 
   put<R = any, B = any>(path: string, body?: B) {
-    return this.https<R, B>(path, "PUT", { body });
+    return this.https<R, B>(path, "PUT", body );
   }
 
   delete<R>(path: string) {

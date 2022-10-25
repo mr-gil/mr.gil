@@ -1,24 +1,25 @@
 import ws from "ws";
+import { Client } from "../Client";
 import { GuildedApiError } from "../errors/apiError";
 
 const version = "0.0.1"
 const userAgent = `Mr.Gil (guilded, ${version})`;
 
 export class shard extends ws {
-  shard_id: string;
-  session_id: any;
-  client: any;
+  shard_id: number;
+  session_id: string;
+  client: Client;
   socket?: WebSocket;
   reconnects = 0;
   lastMessageId?: string;
-  readyAt: any;
-  token: any;
+  readyAt: number;
+  token: string;
   options: any;
 
   constructor(
     url: string,
-    shardid: any,
-    client: any,
+    shardid: number,
+    client: Client,
     options: any = {},
     ...argument: any[]
   ) {
@@ -56,7 +57,7 @@ export class shard extends ws {
       );
 
       let jsondata = { eventType, eventData };
-      this.client.interact(jsondata, this);
+      this.client.interact(jsondata);
     });
 
     this.on("close", () => {

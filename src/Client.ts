@@ -1,5 +1,6 @@
 import { EventEmitter } from "stream";
-import ws from "ws";
+import { User } from "./components";
+import { ChannelCollection, MemberCollection, ServerCollection, UserCollection } from "./components/Collection";
 import { GilError } from "./errors/error";
 import { RESTManager } from "./manager/RESTManager";
 import { dispatch } from "./misc/dispatch";
@@ -8,21 +9,25 @@ import { shard } from "./ws/shard";
 type clientOptions = {
   restAPIRetryInterval?: number;
   maxRestAPIRetries?: number;
-  platform?: "desktop" | "web" | "mobile";
   intents?: number;
   token?: string;
   versionGateway?: number;
 };
 
+
 export class Client extends EventEmitter {
   private token: string;
-  protected gateway: number;
+  public gateway: number;
   shards: any[];
-  platform: any;
-  readyTimestamp: any;
+  readyTimestamp: number;
   readonly rest: RESTManager;
-  proxyUrl: any;
-  resumeTimes: any;
+  proxyUrl: string;
+  resumeTimes: number;
+  user: User;
+  users: UserCollection;
+  servers: ServerCollection;
+  channels: ChannelCollection;
+  members: MemberCollection
 
   constructor(options: clientOptions = { versionGateway: 1 }) {
     super();
@@ -44,8 +49,6 @@ export class Client extends EventEmitter {
       retryInterval: options.restAPIRetryInterval,
     });
     this.shards = [];
-
-    this.platform = options.platform;
   }
 
   get url(): string {
@@ -66,24 +69,17 @@ export class Client extends EventEmitter {
 
   login(token: string) {
     if (!token)
-      throw new GilError("Please provide an token to start your Discord bot.");
+      throw new GilError("Please provide an token to start your Guilded bot.");
 
     if (typeof token == "string")
       this.token = token = token.replace(/^(Bot|Bearer)\s*/i, "");
 
-    
     try {
+      this.rest.setSecret(this.token);
 
-      this.rest.setSecret(this.token)
-      
-      let socket = new shard(
-        this.url,
-        this.shards.length,
-        this,
-        {
-          token: this.token,
-        }
-      );
+      let socket = new shard(this.url, this.shards.length, this, {
+        token: this.token,
+      });
       this.readyTimestamp = socket.readyTimestamp();
 
       this.shards.push(socket);
@@ -98,22 +94,17 @@ export class Client extends EventEmitter {
     }
   }
 
-  interact(data: any, shard: any) {
+  interact(data: any) {
     const { eventType, eventData } = data;
 
-    dispatch(eventType, eventData, this, shard)
+    dispatch(eventType, eventData, this);
   }
-
+  
   reconnect(shardy: any) {
     const shardlamaID = shardy.shard_id,
       sessionID = shardy.session_id;
     this.shards.splice(shardlamaID, 1);
-    const nshard = new shard(
-      this.url,
-      this.shards.length,
-      this,
-      { sessionID }
-    );
+    const nshard = new shard(this.url, this.shards.length, this, { sessionID });
 
     this.resumeTimes++;
 
