@@ -7,7 +7,8 @@ import {
 } from "guilded-api-typings";
 import { Client } from "../Client";
 import { GilError } from "../errors/error";
-import { BaseChannel, BaseServer, User, Member } from "./index";
+import { AnyChannel } from "./Channel";
+import { BaseChannel, BaseServer, User, Member, ChatChannel } from "./index";
 
 type collectionObj = {
   type?: "users" | "members" | "servers" | "channels" | "emotes";
@@ -79,20 +80,20 @@ export class Collection extends Map {
 }
 
 export class ChannelCollection extends Collection {
-  fetch(id: string): Promise<BaseChannel> {
+  fetch(id: string): Promise<AnyChannel> {
     return new Promise(async (resolve, reject) => {
-      let f: BaseChannel = this.get(id);
+      let f: AnyChannel = this.get(id);
       if (!f) {
         let { channel }: { channel: APIChannel } = await this.client.rest.get(
           Routes.channel(id)
         );
         if (!channel || !channel.id) return reject("Unknown Channel");
 
-        let newObj = new BaseChannel(
+        let newObj = (new ChatChannel(
           channel,
           { server: await this.client.servers.fetch(channel.serverId) },
           this.client
-        );
+        ) as AnyChannel);
 
         if (!newObj || !newObj.id) return reject("Unknown Channel");
 

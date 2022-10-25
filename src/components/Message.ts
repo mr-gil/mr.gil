@@ -7,7 +7,7 @@ import {
 import { BaseServer } from ".";
 import { MessageEmbed } from "../builder";
 import { Client } from "../Client";
-import { BaseChannel } from "./Channel";
+import { BaseChannel, ChatChannel } from "./Channel";
 import { Member, User } from "./User";
 
 type messageSend = {
@@ -63,7 +63,7 @@ export class Message {
 
   constructor(
     message: APIMessage,
-    obj: { server: BaseServer; channel: BaseChannel; member: Member | User },
+    obj: { server: BaseServer; channel: ChatChannel; member: Member | User },
     client: Client
   ) {
     let {

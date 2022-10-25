@@ -17,6 +17,8 @@ type messageSend = {
   silent?: boolean;
 };
 
+export type AnyChannel = BaseChannel & ChatChannel;
+
 export class BaseChannel {
   id: string;
   type: ChannelType;
@@ -35,30 +37,32 @@ export class BaseChannel {
   private _client: Client;
   server: BaseServer;
 
-  constructor(channel: APIChannel, obj: { server: BaseServer }, client: Client) {
+  constructor(
+    channel: APIChannel,
+    obj: { server: BaseServer },
+    client: Client
+  ) {
+    Object.defineProperty(this, "_client", {
+      enumerable: false,
+      writable: false,
+      value: client,
+    });
 
-        Object.defineProperty(this, "_client", {
-          enumerable: false,
-          writable: false,
-          value: client,
-        });
-    
-        this.id = channel.id;
-        this.type = channel.type;
-        this.name = channel.name;
-        this.topic = channel.topic;
-        this.createdAt = new Date(channel.createdAt);
-        this.createdBy = channel.createdBy;
-        this.updatedAt = new Date(channel.updatedAt);
-        this.serverId = channel.serverId;
-        this.server = obj.server
-        this.parent = channel.parentId;
-        this.category = channel.categoryId;
-        this.groupId = channel.groupId;
-        this.public = channel.isPublic;
-        this.archivedBy = channel.archivedBy;
-        this.archivedAt = new Date(channel.archivedAt);
-
+    this.id = channel.id;
+    this.type = channel.type;
+    this.name = channel.name;
+    this.topic = channel.topic;
+    this.createdAt = new Date(channel.createdAt);
+    this.createdBy = channel.createdBy;
+    this.updatedAt = new Date(channel.updatedAt);
+    this.serverId = channel.serverId;
+    this.server = obj.server;
+    this.parent = channel.parentId;
+    this.category = channel.categoryId;
+    this.groupId = channel.groupId;
+    this.public = channel.isPublic;
+    this.archivedBy = channel.archivedBy;
+    this.archivedAt = new Date(channel.archivedAt);
   }
 
   get client() {
@@ -70,7 +74,7 @@ export class BaseChannel {
   }
 }
 
-export class ChatChannel extends BaseChannel {
+export class ChatChannel extends BaseChannel implements AnyChannel {
   constructor(
     channel: APIChannel,
     obj: { server: BaseServer },
@@ -79,24 +83,24 @@ export class ChatChannel extends BaseChannel {
     super(channel, obj, client);
   }
 
-  send(text: string | messageSend, options: messageSend) {
+  send(text: string | messageSend, options: messageSend): Promise<Message> {
     const link = Routes.messages(this.id);
 
     const data =
       typeof text == "string"
         ? {
             content: text,
-            isPrivate: options.private,
-            isSilent: options.silent,
-            embeds: options.embeds ?? [],
-            replyMessageIds: options.replyIds,
+            isPrivate: options?.private || false,
+            isSilent: options?.silent || undefined,
+            embeds: options?.embeds,
+            replyMessageIds: options?.replyIds,
           }
         : {
             content: text.content,
-            isPrivate: text.private,
-            isSilent: text.silent,
-            embeds: text.embeds ?? [],
-            replyMessageIds: text.replyIds,
+            isPrivate: text?.private,
+            isSilent: text?.silent,
+            embeds: text.embeds,
+            replyMessageIds: text?.replyIds,
           };
 
     if (data.embeds) {
@@ -105,7 +109,7 @@ export class ChatChannel extends BaseChannel {
 
     return new Promise(async (resolve, reject) => {
       try {
-        let message: APIMessage = await this.client.rest.post(link, {
+        let { message }: { message: APIMessage } = await this.client.rest.post(link, {
           body: JSON.stringify(data),
         });
         resolve(
@@ -116,7 +120,7 @@ export class ChatChannel extends BaseChannel {
               channel: await this.client.channels.fetch(message.channelId),
               member: await this.client.members.fetch(
                 message.createdBy,
-                message.serverId,
+                message.serverId
               ),
             },
             this.client
