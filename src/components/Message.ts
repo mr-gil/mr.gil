@@ -51,7 +51,7 @@ export class Message {
   createdAt: Date;
   mentions: mentionTypes;
   member: Member | User;
-  channel: BaseChannel;
+  channel: ChatChannel;
   server: BaseServer;
   author: User;
   private _client: Client;
@@ -60,14 +60,17 @@ export class Message {
   private: boolean;
   silent: boolean;
   webhook: boolean | { id: string };
+  id: string;
 
   constructor(
     message: APIMessage,
     obj: { server: BaseServer; channel: ChatChannel; member: Member | User },
-    client: Client
+    client: Client,
+    cache = client.cacheMessage ?? true
   ) {
     let {
       mentions,
+      id,
       createdAt,
       createdByWebhookId,
       isPrivate,
@@ -85,6 +88,7 @@ export class Message {
       writable: true,
       value: message,
     });
+    this.id = id
     this.content = message.content;
     this.private = isPrivate;
     this.silent = isSilent;
@@ -98,6 +102,8 @@ export class Message {
     this.member = obj.member;
 
     this.replies = replyMessageIds;
+
+    if(cache) this.channel.messages.cache.set(this.id, this)
   }
 
   get channelUrl() {

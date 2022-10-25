@@ -7,11 +7,14 @@ import {
   UserCollection,
 } from "../components/Collection";
 
-export async function dispatch(
-  type: string,
-  data: any,
-  client: Client
-) {
+/**
+   * Emitting events based on the API Event type `(DO NOT USE)`
+   * @param type
+   * @param data
+   * @param client
+   * @ignore
+   */
+export async function dispatch(type: string, data: any, client: Client) {
   if (!type) {
     client.users = new UserCollection([], { type: "users", client: client });
     client.servers = new ServerCollection([], {
@@ -29,9 +32,28 @@ export async function dispatch(
     });
 
     client.user = await client.users.fetch({}, data?.user);
+
+    client.emit("ready", client);
   }
 
-  if (type === "ChatMessageCreated") {
+  if (type === "ChatMessageUpdated") {
+    let channel = await client.channels.fetch(data.message.channelId);
+    const oldMessage = channel.messages.cache.get(data.message.id);
+    const newMessage = new Message(
+      data.message,
+      {
+        server: await client.servers.fetch(data.serverId),
+        channel: await client.channels.fetch(data.message.channelId),
+        member: await client.members.fetch(
+          data.message.createdBy,
+          data.serverId
+        ),
+      },
+      client
+    );
+
+    client.emit("messageUpdate", newMessage, oldMessage);
+  } else if (type === "ChatMessageCreated") {
     const message: Message = new Message(
       data.message,
       {

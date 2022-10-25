@@ -8,7 +8,7 @@ import {
 import { Client } from "../Client";
 import { GilError } from "../errors/error";
 import { AnyChannel } from "./Channel";
-import { BaseChannel, BaseServer, User, Member, ChatChannel } from "./index";
+import { BaseServer, User, Member, ChatChannel } from "./index";
 
 type collectionObj = {
   type?: "users" | "members" | "servers" | "channels" | "emotes";
@@ -23,7 +23,7 @@ export class Collection extends Map {
 
   constructor(arr: any[], options: collectionObj) {
     super();
-    this.maxSize = options.maxSize || 25;
+    this.maxSize = options.maxSize || this._client?.cacheSize || 25;
     if (this.maxSize && this.maxSize <= 1)
       throw new GilError("Max cache size must be greater than 1.");
 

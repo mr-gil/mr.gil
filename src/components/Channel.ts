@@ -6,6 +6,7 @@ import {
 } from "guilded-api-typings";
 import { MessageEmbed } from "../builder";
 import { Client } from "../Client";
+import { MessageManager } from "../manager/MessageManager";
 import { Message } from "./Message";
 import { BaseServer } from "./Server";
 
@@ -75,12 +76,14 @@ export class BaseChannel {
 }
 
 export class ChatChannel extends BaseChannel implements AnyChannel {
+  readonly messages: MessageManager;
   constructor(
     channel: APIChannel,
     obj: { server: BaseServer },
     client: Client
   ) {
     super(channel, obj, client);
+    this.messages = new MessageManager(this)
   }
 
   send(text: string | messageSend, options: messageSend): Promise<Message> {
@@ -109,9 +112,12 @@ export class ChatChannel extends BaseChannel implements AnyChannel {
 
     return new Promise(async (resolve, reject) => {
       try {
-        let { message }: { message: APIMessage } = await this.client.rest.post(link, {
-          body: JSON.stringify(data),
-        });
+        let { message }: { message: APIMessage } = await this.client.rest.post(
+          link,
+          {
+            body: JSON.stringify(data),
+          }
+        );
         resolve(
           new Message(
             message,

@@ -1,18 +1,17 @@
 {
   "name": "mr.gil",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A Guilded wrapper written in Typescript",
   "main": "lib/mrgil.js",
   "typings": "typings/mrgil.d.ts",
   "scripts": {
     "test": "node test",
-    "git": "sh ./gitpush.sh",
     "dev": "npm publish --tag dev",
     "prepare": "husky install"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/simply-devlop/mr.gil.git"
+    "url": "git+https://github.com/mr-gil/mr.gil.git"
   },
   "keywords": [
     "guilded",
@@ -21,9 +20,9 @@
   "license": "CC BY-NC-ND 4.0",
   "author": "Rahuletto",
   "bugs": {
-    "url": "https://github.com/simply-devlop/mr.gil/issues"
+    "url": "https://github.com/mr-gil/mr.gil/issues"
   },
-  "homepage": "https://github.com/simply-devlop/mr.gil#readme",
+  "homepage": "https://github.com/mr-gil/mr.gil#readme",
   "devDependencies": {
     "@types/node": "^18.11.0",
     "@types/ws": "^8.5.3",
@@ -31,7 +30,6 @@
   },
   "dependencies": {
     "guilded-api-typings": "^0.12.1",
-    "node-fetch": "^3.2.10",
     "ws": "^8.9.0"
   }
 }

@@ -48,7 +48,7 @@ export class shard extends ws {
     }
 
     this.on("open", () => {
-      this.client.emit("ready");
+      
       this.client.readyTimestamp = Date.now();
     });
     this.on("message", (data) => {
