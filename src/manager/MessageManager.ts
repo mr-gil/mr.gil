@@ -3,17 +3,21 @@ import {
   APIMessageFetchManyOptions,
   Routes,
 } from "guilded-api-typings";
+import { FetchManyOptions, FetchOptions } from ".";
 import { Client } from "../Client";
 import { ChatChannel, Message } from "../components";
 import { Collection } from "../components/Collection";
 
 export class MessageManager {
-  readonly cache: Collection;
+  readonly cache: Collection<string, Message>;
+  channel: ChatChannel;
   client: Client;
 
   constructor(channel: ChatChannel, maxCache = Infinity) {
     this.client = channel.client;
+    this.channel = channel;
     this.cache = new Collection([], {
+      client: this.client,
       maxSize: channel.client.cacheSize || maxCache,
     });
   }
@@ -23,55 +27,68 @@ export class MessageManager {
     return this;
   }
 
-  async fetch(channelId: string, msgId: string): Promise<Message>;
+  async fetch(id: string, options?: FetchOptions): Promise<Message>;
   async fetch(
-    channelId: string,
-    options?: APIMessageFetchManyOptions
-  ): Promise<Message[]>;
+    options?: FetchManyOptions | APIMessageFetchManyOptions
+  ): Promise<Collection<string, Message>>;
 
   async fetch(
-    channelId: string,
-    IdOrOptions?: string | APIMessageFetchManyOptions
-  ): Promise<Message[] | Message> {
+    msgId?: string | FetchManyOptions | APIMessageFetchManyOptions,
+    options?: FetchOptions
+  ): Promise<Collection<string, Message> | Message> {
     return new Promise(async (resolve, reject) => {
-      if (typeof IdOrOptions === "string") {
+      if (typeof msgId === "string") {
+        const cached = this.cache.get(msgId);
+        if (cached && !options?.force) return resolve(cached);
+
         const { message } = await this.client.rest.get(
-          Routes.message(channelId, IdOrOptions)
+          Routes.message(this.channel.id, msgId)
         );
 
+        let server = await this.client.servers.fetch(message.serverId);
         const msg = new Message(
           message,
           {
-            server: await this.client.servers.fetch(message.serverId),
+            server: server,
             channel: await this.client.channels.fetch(message.channelId),
-            member: await this.client.members.fetch(
+            member: await server.members.fetch(
               message.createdBy,
               message.serverId
             ),
           },
           this.client
         );
+        this.cache.set(msg.id, msg)
         return resolve(msg);
       } else {
         const { messages } = await this.client.rest.get(
-          Routes.messages(channelId),
-          IdOrOptions
+          Routes.messages(this.channel.id),
+          msgId
         );
 
-        const ms: Message[] = [];
+        const ms: Collection<string, Message> = new Collection<string, Message>(
+          [],
+          { client: this.client, type: "messages" }
+        );
 
         messages.forEach(async (m: APIMessage) => {
-          const msg = new Message(
-            m,
-            {
-              server: await this.client.servers.fetch(m.serverId),
-              channel: await this.client.channels.fetch(m.channelId),
-              member: await this.client.members.fetch(m.createdBy, m.serverId),
-            },
-            this.client
-          );
+          let cac = this.cache.get(m.id)
+          if (cac) {
+            ms.set(cac.id, cac)
+          } else {
+            let server = await this.client.servers.fetch(m.serverId)
+            const msg = new Message(
+              m,
+              {
+                server: server,
+                channel: await this.client.channels.fetch(m.channelId),
+                member: await server.members.fetch(m.createdBy, m.serverId),
+              },
+              this.client
+            );
 
-          ms.push(msg);
+            ms.set(msg.id, msg);
+          }
         });
         return resolve(ms);
       }

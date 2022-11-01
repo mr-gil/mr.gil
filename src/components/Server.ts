@@ -1,6 +1,7 @@
 import { APIEmote, APIServer, Routes } from "guilded-api-typings";
 import { BaseChannel } from "./Channel";
 import { Client } from "../Client";
+import { MemberCollection } from "./Collection";
 
 export class Emote {
   name: string;
@@ -34,6 +35,7 @@ export class BaseServer {
   createdAt: Date;
   defaultChannelId: string;
   timezone: string;
+  members: MemberCollection;
   url: string;
   type:
     | "team"
@@ -46,8 +48,7 @@ export class BaseServer {
     | "other";
   verified: boolean;
 
-  constructor(server: APIServer) {
-    
+  constructor(server: APIServer, client: Client) {
     this.id = server.id;
     this.name = server.name;
     this.avatar = this.icon = server.avatar;
@@ -60,5 +61,10 @@ export class BaseServer {
     this.timezone = server.timezone;
     this.url = server.url;
     this.type = server.type;
+
+    this.members = new MemberCollection([], {
+      type: "members",
+      client: client,
+    });
   }
 }

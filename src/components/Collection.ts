@@ -11,18 +11,20 @@ import { AnyChannel } from "./Channel";
 import { BaseServer, User, Member, ChatChannel } from "./index";
 
 type collectionObj = {
-  type?: "users" | "members" | "servers" | "channels" | "emotes";
+  type?: "users" | "members" | "servers" | "channels" | "emotes" | "messages";
   client?: Client;
   maxSize?: number;
 };
 
-export class Collection extends Map {
+export class Collection<K, V> extends Map<K, V> {
   fetchLinkType: string;
   private _client: Client;
+  createdAt: Date;
   public maxSize?: number;
 
   constructor(arr: any[], options: collectionObj) {
     super();
+    this.createdAt = new Date();
     this.maxSize = options.maxSize || this._client?.cacheSize || 25;
     if (this.maxSize && this.maxSize <= 1)
       throw new GilError("Max cache size must be greater than 1.");
@@ -34,6 +36,10 @@ export class Collection extends Map {
       writable: false,
       value: options.client,
     });
+  }
+
+  get createdTimestamp() {
+    return this.createdAt.getTime();
   }
 
   get client(): Client {
@@ -56,8 +62,8 @@ export class Collection extends Map {
     return this.array().find(fn);
   }
 
-  set(key: any, value: any) {
-    if (this.maxSize && this.size >= this.maxSize) this.delete(this.first()!);
+  set(key: K, value: V) {
+    if (this.maxSize && this.size >= this.maxSize) this.delete(this.keys().next().value!);
 
     return super.set(key, value);
   }
@@ -66,7 +72,7 @@ export class Collection extends Map {
     return this.array().map(fn);
   }
 
-  fetch(id: string, {}, {}): Promise<any> {
+  fetch(id: K, {}, {}): Promise<any> {
     return new Promise((resolve, reject) => {
       const f = this.get(id);
       resolve(f);
@@ -79,7 +85,7 @@ export class Collection extends Map {
   }
 }
 
-export class ChannelCollection extends Collection {
+export class ChannelCollection extends Collection<string, AnyChannel> {
   fetch(id: string): Promise<AnyChannel> {
     return new Promise(async (resolve, reject) => {
       let f: AnyChannel = this.get(id);
@@ -105,9 +111,9 @@ export class ChannelCollection extends Collection {
   }
 }
 
-export class EmoteCollection extends Collection {}
+export class EmoteCollection extends Collection<string, any> {}
 
-export class ServerCollection extends Collection {
+export class ServerCollection extends Collection<string, BaseServer> {
   fetch(id: string): Promise<BaseServer> {
     return new Promise(async (resolve, reject) => {
       let f: BaseServer = this.get(id);
@@ -117,7 +123,7 @@ export class ServerCollection extends Collection {
         );
         if (!server || !server.id) return reject("Unknown Server");
 
-        const newObj = new BaseServer(server);
+        const newObj = new BaseServer(server, this.client);
 
         if (!newObj || !newObj.id) return reject("Unknown Server");
 
@@ -130,7 +136,7 @@ export class ServerCollection extends Collection {
   }
 }
 
-export class MemberCollection extends Collection {
+export class MemberCollection extends Collection<string, Member> {
   fetch(id: string, serverId: string): Promise<Member> {
     return new Promise(async (resolve, reject) => {
       let f = this.get(id);
@@ -147,6 +153,7 @@ export class MemberCollection extends Collection {
         if (!newObj || !newObj.id) return reject("Unknown User/Member");
 
         this.set(id.toString(), newObj);
+        
         f = this.get(id);
       }
 
@@ -155,7 +162,7 @@ export class MemberCollection extends Collection {
   }
 }
 
-export class UserCollection extends Collection {
+export class UserCollection extends Collection<string, User> {
   fetch({}, user: APIUser): Promise<User> {
     return new Promise(async (resolve, reject) => {
       let f = this.get(user.id);

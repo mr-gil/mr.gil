@@ -18,6 +18,7 @@ import { shard } from "./ws/shard";
  */
 
 type clientOptions = {
+  cacheDocs?: boolean;
   restRetryInterval?: number;
   restRetries?: number;
   intents?: number;
@@ -48,9 +49,9 @@ export class Client extends EventEmitter {
   users: UserCollection;
   servers: ServerCollection;
   channels: ChannelCollection;
-  members: MemberCollection;
   cacheSize: number;
   cacheMessage: boolean;
+  cacheDocs?: boolean;
 
   /**
    * Constructor to create a new Client instance
@@ -84,6 +85,7 @@ export class Client extends EventEmitter {
     this.shards = [];
     this.cacheSize = options?.cacheSize;
     this.cacheMessage = options?.cacheMessage;
+    this.cacheDocs = options?.cacheDocs;
   }
 
   /**

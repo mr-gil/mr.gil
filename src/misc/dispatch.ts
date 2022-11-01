@@ -28,10 +28,6 @@ export async function dispatch(type: string, data: any, client: Client) {
       type: "channels",
       client: client,
     });
-    client.members = new MemberCollection([], {
-      type: "members",
-      client: client,
-    });
 
     client.user = await client.users.fetch({}, data?.user);
 

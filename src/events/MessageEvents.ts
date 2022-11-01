@@ -3,15 +3,16 @@ import { Message } from "../components";
 
 export async function MessageEvents(type: string, data: any, client: Client) {
   if (type === "ChatMessageUpdated") {
-    // messageUpdate
+    let server = await client.servers.fetch(data.serverId)
+    
     const channel = await client.channels.fetch(data.message.channelId);
     const oldMessage = channel.messages.cache.get(data.message.id);
     const newMessage = new Message(
       data.message,
       {
-        server: await client.servers.fetch(data.serverId),
+        server: server,
         channel: await client.channels.fetch(data.message.channelId),
-        member: await client.members.fetch(
+        member: await server.members.fetch(
           data.message.createdBy,
           data.serverId
         ),
@@ -21,13 +22,14 @@ export async function MessageEvents(type: string, data: any, client: Client) {
 
     client.emit("messageUpdate", newMessage, oldMessage);
   } else if (type === "ChatMessageCreated") {
-    // messageCreate
+    let server = await client.servers.fetch(data.serverId)
+
     const message: Message = new Message(
       data.message,
       {
-        server: await client.servers.fetch(data.serverId),
+        server: server, 
         channel: await client.channels.fetch(data.message.channelId),
-        member: await client.members.fetch(
+        member: await server.members.fetch(
           data.message.createdBy,
           data.serverId
         ),

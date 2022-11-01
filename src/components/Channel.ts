@@ -1,12 +1,15 @@
 import {
   APIChannel,
+  APIDoc,
   APIMessage,
   ChannelType,
   Routes,
 } from "guilded-api-typings";
 import { MessageEmbed } from "../builder";
 import { Client } from "../Client";
+import { DocManager } from "../manager/DocManager";
 import { MessageManager } from "../manager/MessageManager";
+import { Doc } from "./Doc";
 import { Message } from "./Message";
 import { BaseServer } from "./Server";
 
@@ -18,7 +21,7 @@ type messageSend = {
   silent?: boolean;
 };
 
-export type AnyChannel = BaseChannel & ChatChannel;
+export type AnyChannel = BaseChannel & ChatChannel & DocChannel;
 
 export class BaseChannel {
   id: string;
@@ -75,7 +78,7 @@ export class BaseChannel {
   }
 }
 
-export class ChatChannel extends BaseChannel implements AnyChannel {
+export class ChatChannel extends BaseChannel {
   readonly messages: MessageManager;
   constructor(
     channel: APIChannel,
@@ -120,11 +123,53 @@ export class ChatChannel extends BaseChannel implements AnyChannel {
           new Message(
             message,
             {
-              server: await this.client.servers.fetch(message.serverId),
-              channel: await this.client.channels.fetch(message.channelId),
-              member: await this.client.members.fetch(
+              server: this.server,
+              channel: this,
+              member: await this.server.members.fetch(
                 message.createdBy,
                 message.serverId
+              ),
+            },
+            this.client
+          )
+        );
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+}
+
+export class DocChannel extends BaseChannel {
+  docs: DocManager;
+
+  constructor(
+    channel: APIChannel,
+    obj: { server: BaseServer },
+    client: Client
+  ) {
+    super(channel, obj, client);
+    this.docs = new DocManager(this);
+  }
+
+  post(title: string, content: string) {
+    const link = Routes.docs(this.id);
+
+    return new Promise(async (resolve, reject) => {
+      try {
+        const { doc }: { doc: APIDoc } = await this.client.rest.post(link, {
+          body: JSON.stringify({ title, content }),
+        });
+
+        resolve(
+          new Doc(
+            doc,
+            {
+              server: this.server,
+              channel: this,
+              member: await this.server.members.fetch(
+                doc.createdBy,
+                doc.serverId
               ),
             },
             this.client

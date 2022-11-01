@@ -52,6 +52,7 @@ export class Member extends String {
     member?: APIServerMember,
     obj?: { server: BaseServer, user: User }
   ) {
+    
     super();
         this.user = obj.user
         this.id = member.user.id;

@@ -7,7 +7,7 @@ import {
 import { BaseServer } from ".";
 import { MessageEmbed } from "../builder";
 import { Client } from "../Client";
-import { BaseChannel, ChatChannel } from "./Channel";
+import { ChatChannel } from "./Channel";
 import { Member, User } from "./User";
 
 type messageSend = {
@@ -61,6 +61,7 @@ export class Message {
   silent: boolean;
   webhook: boolean | { id: string };
   id: string;
+  deletedAt: Date;
 
   constructor(
     message: APIMessage,
@@ -157,9 +158,9 @@ export class Message {
         const m = new Message(
           message,
           {
-            server: await this.client.servers.fetch(message.serverId),
-            channel: await this.client.channels.fetch(message.channelId),
-            member: await this.client.members.fetch(
+            server: this.server,
+            channel: this.channel,
+            member: await this.server.members.fetch(
               message.createdBy,
               message.serverId
             ),
@@ -174,28 +175,57 @@ export class Message {
     });
   }
 
-  async fetch(channelId: string, msgId: string): Promise<APIMessage>;
-  async fetch(
-    channelId: string,
-    options?: APIMessageFetchManyOptions
-  ): Promise<APIMessage[]>;
+  edit(text: string | messageSend, options: messageSend) {
 
-  async fetch(
-    channelId: string,
-    IdOrOptions?: string | APIMessageFetchManyOptions
-  ): Promise<APIMessage[] | APIMessage> {
+    const data =
+      typeof text == "string"
+        ? {
+            content: text,
+            isPrivate: options?.private || false,
+            isSilent: options?.silent || undefined,
+            embeds: options?.embeds,
+            replyMessageIds: options?.replyIds
+              ? [this.apiMessage.id, ...options?.replyIds]
+              : [this.apiMessage.id],
+          }
+        : {
+            content: text.content,
+            isPrivate: text?.private,
+            isSilent: text?.silent,
+            embeds: text.embeds,
+            replyMessageIds: text?.replyIds
+              ? [this.apiMessage.id, ...text.replyIds]
+              : [this.apiMessage.id],
+          };
+
+    const msgUrl = Routes.message(this.channel.id, this.id);
+
+    if (typeof text != "string") {
+      text.replyIds = [this.apiMessage.id];
+    }
+
     return new Promise(async (resolve, reject) => {
-      if (typeof IdOrOptions === "string") {
-        const { message } = await this.client.rest.get(
-          Routes.message(channelId, IdOrOptions)
+      try {
+        const { message }: { message: APIMessage } = await this.client.rest.put(
+          msgUrl,
+          {
+            body: JSON.stringify(data),
+          }
         );
-        return resolve(message);
-      } else {
-        const { messages } = await this.client.rest.get(
-          Routes.messages(channelId),
-          IdOrOptions
+
+        let msg = new Message(
+          message,
+          {
+            server: this.server,
+            channel: this.channel,
+            member: this.member,
+          },
+          this.client
         );
-        return resolve(messages);
+
+        resolve(msg);
+      } catch (err) {
+        reject(err);
       }
     });
   }

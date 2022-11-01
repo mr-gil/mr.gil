@@ -7,9 +7,10 @@ export async function TeamMemberEvents(
   data: any,
   client: Client
 ) {
+  let server = await client.servers.fetch(data.serverId);
   if (type === "TeamMemberJoined") {
     // memberJoin
-    const member = await client.members.fetch(
+    const member = await server.members.fetch(
       data.member.user.id,
       data.serverId
     );
@@ -19,7 +20,7 @@ export async function TeamMemberEvents(
   } else if (type === "TeamMemberRemoved") {
     // memberRemove
 
-    const member = await client.members.fetch(data.userId, data.serverId);
+    const member = await server.members.fetch(data.userId, data.serverId);
     const user = member.user;
 
     if (data.isKick) {
@@ -32,7 +33,7 @@ export async function TeamMemberEvents(
   } else if (type === "TeamMemberBanned") {
     // memberBan
     try {
-      const member = await client.members.fetch(
+      const member = await server.members.fetch(
         data.serverMemberBan?.user?.id,
         data.serverId
       );
@@ -49,7 +50,7 @@ export async function TeamMemberEvents(
   } else if (type === "TeamMemberUnbanned") {
     // memberUnban
     try {
-      const member = await client.members.fetch(
+      const member = await server.members.fetch(
         data.serverMemberBan?.user?.id,
         data.serverId
       );
@@ -69,16 +70,16 @@ export async function TeamMemberEvents(
       Routes.serverMember(data.serverId, data.userInfo.id)
     );
 
-    let oldMember = client.members.get(data.userInfo.id);
+    let oldMember = server.members.get(data.userInfo.id);
     if (!oldMember)
-      oldMember = await client.members.fetch(data.userInfo.id, data.serverId);
+      oldMember = await server.members.fetch(data.userInfo.id, data.serverId);
 
     const newMember = new Member(member, {
       server: await client.servers.fetch(data.serverId),
       user: await client.users.fetch({}, member.user),
     });
 
-    client.members.set(data.userInfo.id, newMember);
+    server.members.set(data.userInfo.id, newMember);
 
     client.emit("guildMemberUpdate", oldMember, newMember); // discordjs v13 event
     client.emit("memberUpdate", oldMember, newMember); // mr.gil event
