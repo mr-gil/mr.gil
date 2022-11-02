@@ -8,16 +8,29 @@
 
 
 ## What's Implemented ?
+
+### ChatMessage
 - ChatMessageCreated (messageCreate event)
 - ChatMessageDeleted (messageDelete event)
 - ChatMessageUpdated (messageUpdate event)
 
-
+### TeamMember
 - TeamMemberJoined (memberJoin event)
 - TeamMemberRemoved (memberRemove event)
 - TeamMemberBanned (memberBan event)
 - TeamMemberUnbanned (memberUnban event)
 - TeamMemberUpdated (memberUpdate event)
+
+### Doc
+- DocCreated (docCreate event)
+- DocUpdated (docUpdate event)
+- DocDeleted (docDelete event)
+
+
+
+----------------
+
+We do also support [Guilded API Websocket events](https://www.guilded.gg/docs/api/websockets) (like `ChatMessageCreated`)
 
 ```
 These events are hard to memorize ?

@@ -176,7 +176,6 @@ export class Message {
   }
 
   edit(text: string | messageSend, options: messageSend) {
-
     const data =
       typeof text == "string"
         ? {
@@ -213,7 +212,7 @@ export class Message {
           }
         );
 
-        let msg = new Message(
+        const msg = new Message(
           message,
           {
             server: this.server,

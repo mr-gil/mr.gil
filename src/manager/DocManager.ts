@@ -8,14 +8,22 @@ import { Doc } from "../components/Doc";
 export class DocManager {
   readonly cache: Collection<number, Doc>;
   channel: DocChannel;
-  client: Client;
+  private _client: Client;
 
   constructor(doc: DocChannel, maxCache = Infinity) {
-    this.client = doc.client;
-    this.channel = doc
+    Object.defineProperty(this, "_client", {
+      enumerable: false,
+      writable: false,
+      value: doc.client,
+    });
+    this.channel = doc;
     this.cache = new Collection([], {
       maxSize: doc.client.cacheSize || maxCache,
     });
+  }
+
+  get client() {
+    return this._client;
   }
   setMaxCache(num: number) {
     this.cache.setMaxSize(num);
@@ -36,21 +44,23 @@ export class DocManager {
         const cached = this.cache.get(docOrOptions);
         if (cached && !options?.force) return resolve(cached);
 
-        const { doc }:{ doc: APIDoc } = await this.client.rest.get(
+        const { doc }: { doc: APIDoc } = await this.client.rest.get(
           Routes.doc(this.channel.id, docOrOptions)
         );
 
-        let server = await this.client.servers.fetch(doc.serverId);
+        const server = await this.client.servers.fetch(doc.serverId);
         const docComp = new Doc(
           doc,
           {
             server: server,
-            channel: await this.client.channels.fetch(doc.channelId),
+            channel: (await this.client.channels.fetch(
+              doc.channelId
+            )) as DocChannel,
             member: await server.members.fetch(doc.createdBy, doc.serverId),
           },
           this.client
         );
-        this.cache.set(docOrOptions, docComp)
+        this.cache.set(docOrOptions, docComp);
         return resolve(docComp);
       } else {
         const { docs }: { docs: APIDoc[] } = await this.client.rest.get(
@@ -58,14 +68,16 @@ export class DocManager {
           docOrOptions
         );
 
-        const col: Collection<number, Doc>  = new Collection([], {client: this.client});
+        const col: Collection<number, Doc> = new Collection([], {
+          client: this.client,
+        });
 
         docs.forEach(async (d: APIDoc) => {
-          let cac = this.cache.get(d.id);
+          const cac = this.cache.get(d.id);
           if (cac) {
-            col.set(cac.id, cac)
+            col.set(cac.id, cac);
           } else {
-            let server = await this.client.servers.fetch(d.serverId)
+            const server = await this.client.servers.fetch(d.serverId);
             const dc = new Doc(
               d,
               {
@@ -76,7 +88,7 @@ export class DocManager {
               this.client
             );
 
-            col.set(dc.id, dc)
+            col.set(dc.id, dc);
           }
         });
         return resolve(col);

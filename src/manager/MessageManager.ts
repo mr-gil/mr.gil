@@ -11,16 +11,25 @@ import { Collection } from "../components/Collection";
 export class MessageManager {
   readonly cache: Collection<string, Message>;
   channel: ChatChannel;
-  client: Client;
+  private _client: Client;
 
   constructor(channel: ChatChannel, maxCache = Infinity) {
-    this.client = channel.client;
+    Object.defineProperty(this, "_client", {
+      enumerable: false,
+      writable: false,
+      value: channel.client,
+    });
     this.channel = channel;
     this.cache = new Collection([], {
       client: this.client,
       maxSize: channel.client.cacheSize || maxCache,
     });
   }
+
+  get client() {
+    return this._client
+  }
+  
 
   setMaxCache(num: number) {
     this.cache.setMaxSize(num);
@@ -45,7 +54,7 @@ export class MessageManager {
           Routes.message(this.channel.id, msgId)
         );
 
-        let server = await this.client.servers.fetch(message.serverId);
+        const server = await this.client.servers.fetch(message.serverId);
         const msg = new Message(
           message,
           {
@@ -58,7 +67,7 @@ export class MessageManager {
           },
           this.client
         );
-        this.cache.set(msg.id, msg)
+        this.cache.set(msg.id, msg);
         return resolve(msg);
       } else {
         const { messages } = await this.client.rest.get(
@@ -72,11 +81,11 @@ export class MessageManager {
         );
 
         messages.forEach(async (m: APIMessage) => {
-          let cac = this.cache.get(m.id)
+          const cac = this.cache.get(m.id);
           if (cac) {
-            ms.set(cac.id, cac)
+            ms.set(cac.id, cac);
           } else {
-            let server = await this.client.servers.fetch(m.serverId)
+            const server = await this.client.servers.fetch(m.serverId);
             const msg = new Message(
               m,
               {

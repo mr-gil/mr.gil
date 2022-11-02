@@ -3,11 +3,12 @@ import {
   APIServer,
   APIServerMember,
   APIUser,
+  APIUserSummary,
   Routes,
 } from "guilded-api-typings";
 import { Client } from "../Client";
 import { GilError } from "../errors/error";
-import { AnyChannel } from "./Channel";
+import { AnyChannel, BaseChannel, DocChannel } from "./Channel";
 import { BaseServer, User, Member, ChatChannel } from "./index";
 
 type collectionObj = {
@@ -63,7 +64,8 @@ export class Collection<K, V> extends Map<K, V> {
   }
 
   set(key: K, value: V) {
-    if (this.maxSize && this.size >= this.maxSize) this.delete(this.keys().next().value!);
+    if (this.maxSize && this.size >= this.maxSize)
+      this.delete(this.keys().next().value!);
 
     return super.set(key, value);
   }
@@ -95,11 +97,39 @@ export class ChannelCollection extends Collection<string, AnyChannel> {
         );
         if (!channel || !channel.id) return reject("Unknown Channel");
 
-        const newObj = new ChatChannel(
-          channel,
-          { server: await this.client.servers.fetch(channel.serverId) },
-          this.client
-        ) as AnyChannel;
+        let server = await this.client.servers.fetch(channel.serverId);
+
+        let newObj: AnyChannel;
+
+        switch (channel.type) {
+          case "docs":
+            newObj = new DocChannel(
+              channel,
+              {
+                server: server,
+              },
+              this.client
+            ) as AnyChannel;
+            break;
+          case "chat":
+            newObj = new ChatChannel(
+              channel,
+              {
+                server: server,
+              },
+              this.client
+            ) as AnyChannel;
+
+            break;
+          default:
+            newObj = new BaseChannel(
+              channel,
+              {
+                server: server,
+              },
+              this.client
+            ) as AnyChannel;
+        }
 
         if (!newObj || !newObj.id) return reject("Unknown Channel");
 
@@ -153,7 +183,7 @@ export class MemberCollection extends Collection<string, Member> {
         if (!newObj || !newObj.id) return reject("Unknown User/Member");
 
         this.set(id.toString(), newObj);
-        
+
         f = this.get(id);
       }
 
@@ -163,7 +193,7 @@ export class MemberCollection extends Collection<string, Member> {
 }
 
 export class UserCollection extends Collection<string, User> {
-  fetch({}, user: APIUser): Promise<User> {
+  fetch({}, user: APIUser | APIUserSummary): Promise<User> {
     return new Promise(async (resolve, reject) => {
       let f = this.get(user.id);
       if (!f) {

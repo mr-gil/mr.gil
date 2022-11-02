@@ -18,6 +18,7 @@ export class Doc {
   private _client: Client;
   server: BaseServer;
   mentions: Mentions;
+  deleted: boolean;
   channel: DocChannel;
 
   constructor(
@@ -27,20 +28,28 @@ export class Doc {
     cache = client.cacheDocs ?? true
   ) {
     this.id = doc.id;
-    this.channelId = doc.channelId
+    this.channelId = doc.channelId;
     this.server = obj.server;
     this.serverId = doc.serverId;
-    this._client = client;
+    Object.defineProperty(this, "_client", {
+      enumerable: false,
+      writable: false,
+      value: client,
+    });
+    
     this.title = doc.title;
     this.createdAt = new Date(doc.createdAt);
     this.createdBy = doc.createdBy;
     this.content = doc.content;
     this.mentions = new Mentions(doc.mentions);
-    this.updatedAt = new Date(doc.updatedAt);
     this.channel = obj.channel;
-    this.updatedBy = doc.updatedBy;
 
-    if(cache) this.channel.docs.cache.set(this.id, this);
+    if (doc.updatedBy || doc.updatedAt) {
+      this.updatedAt = new Date(doc.updatedAt);
+      this.updatedBy = doc.updatedBy;
+    }
+
+    if (cache) this.channel.docs.cache.set(this.id, this);
   }
 
   get client() {
@@ -48,7 +57,7 @@ export class Doc {
   }
 
   async author() {
-    let member = await this.server.members.get(this.createdBy);
+    const member = await this.server.members.get(this.createdBy);
     return member;
   }
 
@@ -57,26 +66,28 @@ export class Doc {
   }
 
   edit(title: string, content: string) {
-    let docUrl = Routes.doc(this.channelId, this.id)
+    const docUrl = Routes.doc(this.channelId, this.id);
 
     return new Promise(async (resolve, reject) => {
       try {
         const { doc }: { doc: APIDoc } = await this.client.rest.put(docUrl, {
-          body: JSON.stringify({ title, content })
-        })
+          body: JSON.stringify({ title, content }),
+        });
 
-        let d = new Doc(doc, {
-          server: this.server,
-          channel: this.channel,
-          member: await this.author()
-        },
+        const d = new Doc(
+          doc,
+          {
+            server: this.server,
+            channel: this.channel,
+            member: await this.author(),
+          },
           this.client
-        )
+        );
 
-        resolve(d)
+        resolve(d);
       } catch (err) {
-        reject(err)
+        reject(err);
       }
-    })
+    });
   }
 }
