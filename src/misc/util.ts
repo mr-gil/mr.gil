@@ -1,8 +1,14 @@
 // Inspired by Guilded.JS' {@link https://github.com/guildedjs/guilded.js/blob/main/packages/webhook-client/lib/util.ts#L8 color resolver}.
 
-export function resolveColor(color: ColorResolvable) {
+/**
+ * Resolves the color string to a valid hex number of the color
+ * @param color 
+ * @returns {number} `enum number`
+ */
+export function resolveColor(color: ColorResolvable): number {
   if (color === "RANDOM") color = Math.floor(Math.random() * (0xffffff + 1));
-  else if (typeof color === `string`) // @ts-ignore
+  else if (typeof color === `string`)
+    // @ts-ignore
     color = Colors[color] ?? parseInt(color.replace("#", ""), 16);
   else if (Array.isArray(color))
     color = (color[0] << 16) + (color[1] << 8) + color[2];
@@ -15,7 +21,6 @@ export type ColorResolvable =
   | "RANDOM"
   | number
   | [r: number, g: number, b: number];
-
 
 export enum Colors {
   DEFAULT = 0x000000,

@@ -7,12 +7,12 @@ import {
   Routes,
 } from "guilded-api-typings";
 import { Client } from "../Client";
-import { GilError } from "../errors/error";
+import { GuildedApiError } from "../errors/apiError";
 import { AnyChannel, BaseChannel, DocChannel } from "./Channel";
 import { BaseServer, User, Member, ChatChannel } from "./index";
 
 type collectionObj = {
-  type?: "users" | "members" | "servers" | "channels" | "emotes" | "messages";
+  type?: "users" | "members" | "servers" | "channels" | "emotes";
   client?: Client;
   maxSize?: number;
 };
@@ -28,7 +28,7 @@ export class Collection<K, V> extends Map<K, V> {
     this.createdAt = new Date();
     this.maxSize = options.maxSize || this._client?.cacheSize || 25;
     if (this.maxSize && this.maxSize <= 1)
-      throw new GilError("Max cache size must be greater than 1.");
+      throw new GuildedApiError("Max cache size must be greater than 1.");
 
     this.fetchLinkType = options.type;
 
@@ -95,7 +95,8 @@ export class ChannelCollection extends Collection<string, AnyChannel> {
         const { channel }: { channel: APIChannel } = await this.client.rest.get(
           Routes.channel(id)
         );
-        if (!channel || !channel.id) return reject("Unknown Channel");
+        if (!channel || !channel.id)
+          return new GuildedApiError("Unknown Channel");
 
         let server = await this.client.servers.fetch(channel.serverId);
 
@@ -131,7 +132,8 @@ export class ChannelCollection extends Collection<string, AnyChannel> {
             ) as AnyChannel;
         }
 
-        if (!newObj || !newObj.id) return reject("Unknown Channel");
+        if (!newObj || !newObj.id)
+          return new GuildedApiError("Unknown Channel");
 
         this.set(id.toString(), newObj);
         f = this.get(id);
@@ -151,11 +153,11 @@ export class ServerCollection extends Collection<string, BaseServer> {
         const { server }: { server: APIServer } = await this.client.rest.get(
           Routes.server(id)
         );
-        if (!server || !server.id) return reject("Unknown Server");
+        if (!server || !server.id) return new GuildedApiError("Unknown Server");
 
         const newObj = new BaseServer(server, this.client);
 
-        if (!newObj || !newObj.id) return reject("Unknown Server");
+        if (!newObj || !newObj.id) return new GuildedApiError("Unknown Server");
 
         this.set(id.toString(), newObj);
         f = this.get(id);
@@ -174,13 +176,15 @@ export class MemberCollection extends Collection<string, Member> {
         const { member }: { member: APIServerMember } =
           await this.client.rest.get(Routes.serverMember(serverId, id));
 
-        if (!member || !member.user) return reject("Unknown User/Member");
+        if (!member || !member.user)
+          return new GuildedApiError("Unknown User/Member");
         const newObj = new Member(member, {
           server: await this.client.servers.fetch(serverId),
           user: await this.client.users.fetch({}, member.user),
         });
 
-        if (!newObj || !newObj.id) return reject("Unknown User/Member");
+        if (!newObj || !newObj.id)
+          return new GuildedApiError("Unknown User/Member");
 
         this.set(id.toString(), newObj);
 
@@ -199,7 +203,7 @@ export class UserCollection extends Collection<string, User> {
       if (!f) {
         const newObj = new User(user);
 
-        if (!newObj || !newObj.id) return reject("Unknown User");
+        if (!newObj || !newObj.id) return new GuildedApiError("Unknown User");
 
         this.set(user.id.toString(), newObj);
         f = this.get(user.id);

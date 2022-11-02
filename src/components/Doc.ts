@@ -1,5 +1,6 @@
 import { APIDoc, Routes } from "guilded-api-typings";
 import { Client } from "../Client";
+import { GuildedApiError } from "../errors/apiError";
 import { DocChannel } from "./Channel";
 import { Mentions } from "./Message";
 import { BaseServer } from "./Server";
@@ -36,7 +37,7 @@ export class Doc {
       writable: false,
       value: client,
     });
-    
+
     this.title = doc.title;
     this.createdAt = new Date(doc.createdAt);
     this.createdBy = doc.createdBy;
@@ -85,8 +86,8 @@ export class Doc {
         );
 
         resolve(d);
-      } catch (err) {
-        reject(err);
+      } catch (err: any) {
+        throw new GuildedApiError(err);
       }
     });
   }

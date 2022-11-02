@@ -2,11 +2,10 @@ import { EventEmitter } from "stream";
 import { User } from "./components";
 import {
   ChannelCollection,
-  MemberCollection,
   ServerCollection,
   UserCollection,
 } from "./components/Collection";
-import { GilError } from "./errors/error";
+import { GuildedApiError } from "./errors/apiError";
 import { RESTManager } from "./manager/RESTManager";
 import { dispatch } from "./misc/dispatch";
 import { shard } from "./ws/shard";
@@ -117,7 +116,9 @@ export class Client extends EventEmitter {
    */
   login(token: string) {
     if (!token)
-      throw new GilError("Please provide an token to start your Guilded bot.");
+      throw new GuildedApiError(
+        "Please provide an token to start your Guilded bot."
+      );
 
     if (typeof token == "string")
       this.token = token = token.replace(/^(Bot|Bearer)\s*/i, "");

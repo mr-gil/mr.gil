@@ -7,6 +7,7 @@ import {
   Routes,
 } from "guilded-api-typings";
 import { Client } from "../Client";
+import { GuildedApiError } from "../errors/apiError";
 import { MemberBan } from "./MemberBan";
 import { BaseServer } from "./Server";
 
@@ -73,15 +74,15 @@ export class Member extends String {
   }
 
   kick(reason: string) {
-    const link = Routes.serverMember(this.server.id, this.id)
+    const link = Routes.serverMember(this.server.id, this.id);
 
-    this._client.rest.delete(link)
+    this._client.rest.delete(link);
 
     return {
       user: this.user,
       kick: true,
-      reason: reason || "No Reason"
-    }
+      reason: reason || "No Reason",
+    };
   }
 
   ban(reason: string): Promise<MemberBan> {
@@ -89,23 +90,22 @@ export class Member extends String {
     return new Promise(async (resolve, reject) => {
       try {
         const ban = await this._client.rest.post(link, {
-          body: JSON.stringify({ reason: reason || "No Reason" })
-        })
+          body: JSON.stringify({ reason: reason || "No Reason" }),
+        });
 
-        const serverBan = new MemberBan(ban, { user: this.user })
+        const serverBan = new MemberBan(ban, { user: this.user });
 
-        resolve(serverBan)
-      } catch (err) {
-        reject(err)
+        resolve(serverBan);
+      } catch (err: any) {
+        throw new GuildedApiError(err);
       }
-    })
+    });
   }
-
 }
 
 class Nickname extends String {
   name: string;
-  private member: Member
+  private member: Member;
 
   constructor(string: string, member: Member) {
     super(string);
@@ -116,23 +116,22 @@ class Nickname extends String {
       writable: false,
       value: member,
     });
-
   }
 
   async set(client: Client, name: string) {
     const link = Routes.serverNickname(this.member.server.id, this.member.id);
 
-    let response: {nickname: string} = await client.rest.put(link, {
-      body: JSON.stringify({nickname: name})
-    })
+    let response: { nickname: string } = await client.rest.put(link, {
+      body: JSON.stringify({ nickname: name }),
+    });
 
     return response;
   }
 
- reset(client: Client) {
+  reset(client: Client) {
     const link = Routes.serverNickname(this.member.server.id, this.member.id);
 
-    client.rest.delete(link)
+    client.rest.delete(link);
 
     return true;
   }

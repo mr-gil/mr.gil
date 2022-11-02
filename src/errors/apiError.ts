@@ -7,14 +7,14 @@ export class GuildedApiError extends Error {
    */
 
   constructor(err: APIError | any) {
-    const msg =
-      err.code +
-      ": " +
-      err.message +
-      (err.meta ? " - " + err.meta[Object.keys(err.meta)[0]][0] : "");
+    const msg = (err as string)
+      ? `"${err}"`
+      : (err.code ? err.code + ": " : "") +
+        err.message +
+        (err.meta ? " - " + err.meta[Object.keys(err.meta)[0]][0] : "");
     super(
       err.code === "ENOTFOUND"
-        ? "You don't have access to the Guilded api.\n\nThis may due to the hosting server\n\t(or)\nBot secret is invalid\n"
+        ? "You don't have access to the Guilded api.\n\nThis may due to the hosting server\n"
         : msg
     );
   }

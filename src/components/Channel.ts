@@ -5,10 +5,12 @@ import {
   ChannelType,
   Routes,
 } from "guilded-api-typings";
-import { MessageEmbed } from "../builder";
+import { MessageEmbed, DocBuilder } from "../builder";
 import { Client } from "../Client";
+import { GuildedApiError } from "../errors/apiError";
 import { DocManager } from "../manager/DocManager";
 import { MessageManager } from "../manager/MessageManager";
+import { Collection } from "./Collection";
 import { Doc } from "./Doc";
 import { Message } from "./Message";
 import { BaseServer } from "./Server";
@@ -89,6 +91,51 @@ export class ChatChannel extends BaseChannel {
     this.messages = new MessageManager(this);
   }
 
+  fetchBulk(
+    options: {
+      before?: string;
+      after?: string;
+      limit?: number;
+      includePrivate?: boolean;
+    } = { limit: 25 }
+  ) {
+    const link = Routes.messages(this.id);
+
+    if (options.limit > 100) options.limit = 100;
+
+    return new Promise(async (resolve, reject) => {
+      try {
+        const { messages }: { messages: APIMessage[] } =
+          await this.client.rest.get(link, {
+            body: JSON.stringify(options),
+          });
+
+        const msgs = new Collection([], { client: this.client });
+
+        messages.forEach(async (m) => {
+          const msg = new Message(
+            m,
+            {
+              server: this.server,
+              channel: this,
+              member: await this.server.members.fetch(
+                m.createdBy,
+                this.server.id
+              ),
+            },
+            this.client
+          );
+
+          msgs.set(msg.id, msg);
+        });
+
+        resolve(msgs);
+      } catch (err: any) {
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+
   send(text: string | messageSend, options: messageSend): Promise<Message> {
     const link = Routes.messages(this.id);
 
@@ -133,8 +180,8 @@ export class ChatChannel extends BaseChannel {
             this.client
           )
         );
-      } catch (err) {
-        reject(err);
+      } catch (err: any) {
+        throw new GuildedApiError(err);
       }
     });
   }
@@ -152,13 +199,65 @@ export class DocChannel extends BaseChannel {
     this.docs = new DocManager(this);
   }
 
-  post(title: string, content: string) {
+  fetchBulk(
+    options: {
+      before?: string;
+      limit?: number;
+    } = { limit: 15 }
+  ) {
+    const link = Routes.docs(this.id);
+
+    if (options.limit > 100) options.limit = 100;
+
+    return new Promise(async (resolve, reject) => {
+      try {
+        const { docs }: { docs: APIDoc[] } = await this.client.rest.get(link, {
+          body: JSON.stringify(options),
+        });
+
+        const dcs = new Collection([], { client: this.client });
+
+        docs.forEach(async (d) => {
+          const doc = new Doc(
+            d,
+            {
+              server: this.server,
+              channel: this,
+              member: await this.server.members.fetch(
+                d.createdBy,
+                this.server.id
+              ),
+            },
+            this.client
+          );
+
+          dcs.set(doc.id, doc);
+        });
+
+        resolve(dcs);
+      } catch (err: any) {
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+
+  post(title: string | DocBuilder, content: string) {
     const link = Routes.docs(this.id);
 
     return new Promise(async (resolve, reject) => {
       try {
+        let data: DocBuilder | { title: string; content: string };
+
+        if (title instanceof DocBuilder) {
+          data = title;
+        } else
+          data = {
+            title: title as string,
+            content,
+          };
+
         const { doc }: { doc: APIDoc } = await this.client.rest.post(link, {
-          body: JSON.stringify({ title, content }),
+          body: JSON.stringify(data),
         });
 
         resolve(
@@ -175,8 +274,8 @@ export class DocChannel extends BaseChannel {
             this.client
           )
         );
-      } catch (err) {
-        reject(err);
+      } catch (err: any) {
+        throw new GuildedApiError(err);
       }
     });
   }

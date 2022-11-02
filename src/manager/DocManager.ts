@@ -1,30 +1,22 @@
 import { APIDoc, APIDocFetchManyOptions, Routes } from "guilded-api-typings";
-import { FetchOptions } from ".";
+import { BaseManager, FetchOptions } from ".";
 import { Client } from "../Client";
 import { Collection } from "../components";
 import { DocChannel } from "../components/Channel";
 import { Doc } from "../components/Doc";
 
-export class DocManager {
+export class DocManager extends BaseManager{
   readonly cache: Collection<number, Doc>;
   channel: DocChannel;
-  private _client: Client;
 
   constructor(doc: DocChannel, maxCache = Infinity) {
-    Object.defineProperty(this, "_client", {
-      enumerable: false,
-      writable: false,
-      value: doc.client,
-    });
+    super(doc.client)
     this.channel = doc;
     this.cache = new Collection([], {
-      maxSize: doc.client.cacheSize || maxCache,
+      maxSize: super.client.cacheSize || maxCache,
     });
   }
 
-  get client() {
-    return this._client;
-  }
   setMaxCache(num: number) {
     this.cache.setMaxSize(num);
     return this;
@@ -61,7 +53,7 @@ export class DocManager {
           this.client
         );
         this.cache.set(docOrOptions, docComp);
-        return resolve(docComp);
+        resolve(docComp);
       } else {
         const { docs }: { docs: APIDoc[] } = await this.client.rest.get(
           Routes.docs(this.channel.id),
@@ -91,7 +83,7 @@ export class DocManager {
             col.set(dc.id, dc);
           }
         });
-        return resolve(col);
+        resolve(col);
       }
     });
   }

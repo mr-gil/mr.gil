@@ -9,6 +9,8 @@
 
 ## What's Implemented ?
 
+- **15/43 Events**
+
 ### ChatMessage
 - ChatMessageCreated (messageCreate event)
 - ChatMessageDeleted (messageDelete event)
@@ -26,7 +28,15 @@
 - DocUpdated (docUpdate event)
 - DocDeleted (docDelete event)
 
+### ChannelMessageReaction
+- ChannelMessageReactionCreated (reactionCreate event)
+- ChannelMessageReactionDeleted (reactionDelete event)
 
+### teamRoles
+- teamRolesUpdated (roleUpdate event)
+
+### BotMember
+- BotTeamMembershipCreated (botCreate event)
 
 ----------------
 

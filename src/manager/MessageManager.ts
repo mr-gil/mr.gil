@@ -3,33 +3,22 @@ import {
   APIMessageFetchManyOptions,
   Routes,
 } from "guilded-api-typings";
-import { FetchManyOptions, FetchOptions } from ".";
-import { Client } from "../Client";
+import { BaseManager, FetchManyOptions, FetchOptions } from ".";
 import { ChatChannel, Message } from "../components";
 import { Collection } from "../components/Collection";
 
-export class MessageManager {
+export class MessageManager extends BaseManager{
   readonly cache: Collection<string, Message>;
   channel: ChatChannel;
-  private _client: Client;
 
   constructor(channel: ChatChannel, maxCache = Infinity) {
-    Object.defineProperty(this, "_client", {
-      enumerable: false,
-      writable: false,
-      value: channel.client,
-    });
+    super(channel.client)
     this.channel = channel;
     this.cache = new Collection([], {
       client: this.client,
-      maxSize: channel.client.cacheSize || maxCache,
+      maxSize: super.client.cacheSize || maxCache,
     });
   }
-
-  get client() {
-    return this._client
-  }
-  
 
   setMaxCache(num: number) {
     this.cache.setMaxSize(num);
@@ -68,7 +57,7 @@ export class MessageManager {
           this.client
         );
         this.cache.set(msg.id, msg);
-        return resolve(msg);
+        resolve(msg);
       } else {
         const { messages } = await this.client.rest.get(
           Routes.messages(this.channel.id),
@@ -77,7 +66,7 @@ export class MessageManager {
 
         const ms: Collection<string, Message> = new Collection<string, Message>(
           [],
-          { client: this.client, type: "messages" }
+          { client: this.client }
         );
 
         messages.forEach(async (m: APIMessage) => {
@@ -99,7 +88,7 @@ export class MessageManager {
             ms.set(msg.id, msg);
           }
         });
-        return resolve(ms);
+        resolve(ms);
       }
     });
   }

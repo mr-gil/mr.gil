@@ -2,7 +2,6 @@ import { APIError } from "guilded-api-typings";
 import EventEmitter from "events";
 import { GuildedApiError } from "../errors/apiError";
 import { request } from "https";
-import { GilError } from "../errors/error";
 import { Client } from "../Client";
 
 const version = "0.0.1";
@@ -99,13 +98,15 @@ export class RESTManager extends EventEmitter {
             try {
               resolve(JSON.parse(body));
             } catch (e: any) {
-              throw new GilError(e);
+              throw new GuildedApiError(e);
             }
           });
         }
       );
 
-      req.on("error", reject);
+      req.on("error", (err) => {
+        throw new GuildedApiError(err);
+      });
       if (options?.body) req.write(options.body);
 
       req.end(JSON.stringify);

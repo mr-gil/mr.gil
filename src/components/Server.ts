@@ -10,6 +10,7 @@ import { Client } from "../Client";
 import { Collection, MemberCollection } from "./Collection";
 import { MemberBan } from "./MemberBan";
 import { User } from "./User";
+import { GuildedApiError } from "../errors/apiError";
 
 export class Emote {
   name: string;
@@ -71,12 +72,21 @@ export class BaseServer {
     this.url = server.url;
     this.type = server.type;
 
-    this.members = new MemberCollection([], {
-      type: "members",
-      client: client,
+    Object.defineProperty(this, "members", {
+      enumerable: false,
+      writable: false,
+      value: new MemberCollection([], {
+        type: "members",
+        client: client,
+      }),
     });
 
-    this.bans = new Bans(this, client);
+    Object.defineProperty(this, "bans", {
+      enumerable: false,
+      writable: false,
+      value: new Bans(this, client)
+    });
+
   }
 }
 
@@ -125,8 +135,8 @@ class Bans {
         });
 
         resolve(serverBan);
-      } catch (err) {
-        reject(err);
+      } catch (err: any) {
+        throw new GuildedApiError(err);
       }
     });
   }
@@ -142,8 +152,8 @@ class Bans {
         const serverBan = new MemberBan(ban, { user: user });
 
         resolve(serverBan);
-      } catch (err) {
-        reject(err);
+      } catch (err: any) {
+        throw new GuildedApiError(err);
       }
     });
   }
@@ -159,8 +169,8 @@ class Bans {
           unban: true,
           reason: reason,
         });
-      } catch (err) {
-        reject(err);
+      } catch (err: any) {
+        throw new GuildedApiError(err);
       }
     });
   }

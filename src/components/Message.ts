@@ -2,13 +2,13 @@ import {
   APIMentions,
   APIMessage,
   APIMessageFetchManyOptions,
+  APIMessageReaction,
   Routes,
 } from "guilded-api-typings";
-import { BaseServer } from ".";
+import { BaseServer, Emote, ChatChannel, Member, User } from ".";
 import { MessageEmbed } from "../builder";
 import { Client } from "../Client";
-import { ChatChannel } from "./Channel";
-import { Member, User } from "./User";
+import { GuildedApiError } from "../errors/apiError";
 
 type messageSend = {
   content?: string;
@@ -169,8 +169,8 @@ export class Message {
         );
 
         resolve(m);
-      } catch (err) {
-        reject(err);
+      } catch (err: any) {
+        throw new GuildedApiError(err);
       }
     });
   }
@@ -223,9 +223,43 @@ export class Message {
         );
 
         resolve(msg);
-      } catch (err) {
-        reject(err);
+      } catch (err: any) {
+        throw new GuildedApiError(err);
       }
     });
+  }
+}
+
+
+export class MessageReaction extends String {
+  message: Message;
+  reactedBy: Member;
+  createdBy: string;
+  messageId: string;
+  emote: Emote;
+  channelId: string
+
+  constructor(reaction: APIMessageReaction, obj: { message: Message, member: Member }, client: Client) {
+    super();
+    this.message = obj.message
+    this.reactedBy = obj.member
+    this.createdBy = reaction.createdBy
+    this.messageId = reaction.messageId
+    this.emote = new Emote(reaction.emote)
+    this.channelId = reaction.channelId
+  }
+
+  remove() {
+    const link = Routes.reaction(this.channelId, this.messageId, this.emote.id)
+
+    return new Promise(async (resolve, reject) => {
+      try {
+        await this.message.client.rest.delete(link)
+
+        resolve(true)
+      } catch (err) {
+        throw new GuildedApiError(err)
+      }
+    })
   }
 }

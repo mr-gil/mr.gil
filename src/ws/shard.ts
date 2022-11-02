@@ -5,6 +5,13 @@ import { GuildedApiError } from "../errors/apiError";
 const version = "0.0.1";
 const userAgent = `Mr.Gil (guilded, ${version})`;
 
+/**
+ * The Shard class that is just used for Websocket connection
+ * 
+ * No real use for `end-user`
+ * @extends {ws}
+ */
+
 export class shard extends ws {
   shard_id: number;
   session_id: string;
@@ -15,6 +22,16 @@ export class shard extends ws {
   readyAt: number;
   token: string;
   options: any;
+
+  /**
+   * Constructor to create a new Shard instance
+   * @example
+   * const shard = new shard(`wss://...`, 0, client, "session-id");
+   * @param {string} url URL of the websocket
+   * @param {number} shardid The ID of the shard that gets created
+   * @param {Client} client Client instance
+   * @param {any} options Options to be provided to the shard
+   */
 
   constructor(
     url: string,
@@ -63,11 +80,17 @@ export class shard extends ws {
       this.onSocketDisconnect.bind(this);
     });
     this.on("error", (e) => {
-      this.client.emit("error", e);
+      this.client.emit("apiError", e);
       throw new GuildedApiError(e);
     });
   }
 
+  /**
+   * The Reconnection process to keep the connection alive.
+   * Done in
+   * @example
+   * client.reconnect(shard)
+   */
   private onSocketDisconnect() {
     this.socket = undefined;
     this.readyAt = undefined;
@@ -81,18 +104,35 @@ export class shard extends ws {
     this.emit("reconnect", this);
   }
 
+  /**
+   * Status of the websocket if its connected
+   * @returns {boolean} `boolean`
+   */
   get connected() {
     return this.readyState == ws.OPEN;
   }
 
+  /**
+   * Formats a JSON data to string and sends the stream to the websocket
+   * @param data
+   * @param type
+   * @returns {void} void
+   */
   format(data: object, type = "json") {
     return this.send(type == "json" ? JSON.stringify(data) : data);
   }
 
+  /**
+   * Returns the time of the shard getting online `(READY state)`
+   * @returns {number} `millisecond`
+   */
   readyTimestamp(): any {
     return this.readyTimestamp;
   }
 
+  /**
+   * Stop the shard and close the handshake connection
+   */
   stop() {
     this.removeAllListeners();
     this.close();

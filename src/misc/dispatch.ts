@@ -10,7 +10,7 @@ import {
 import eventHandler from "../events";
 
 /**
- * Emitting events based on the API Event type `(DO NOT USE)`
+ * Emitting events based on the API Event type `(NOT INTENDED FOR END-USER)`
  * @param type
  * @param data
  * @param client
