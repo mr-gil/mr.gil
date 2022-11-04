@@ -1,6 +1,5 @@
 import { APIDoc, APIDocFetchManyOptions, Routes } from 'guilded-api-typings';
 import { BaseManager, FetchOptions } from './BaseManager';
-import { Client } from '../Client';
 import { Collection } from '../components';
 import { DocChannel } from '../components/Channel';
 import { Doc } from '../components/Doc';

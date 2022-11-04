@@ -1,6 +1,6 @@
 {
   "name": "mr.gil",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A Guilded wrapper written in Typescript",
   "main": "lib/mrgil.js",
   "typings": "typings/mrgil.d.ts",

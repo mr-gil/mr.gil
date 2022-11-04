@@ -8,7 +8,7 @@ import { BaseServer, Emote, ChatChannel, Member, User } from '.';
 import { MessageEmbed } from '../builder';
 import { Client } from '../Client';
 import { collectorOptions } from '../collectors/BaseCollector';
-import { MessageReactionCollector } from '../collectors/MessageReactionCollector';
+import { MessageReactionCollector } from '../collectors/MessageCollector';
 import { GuildedApiError } from '../errors/apiError';
 
 export class Message {
@@ -29,7 +29,7 @@ export class Message {
     private obj: {
       server: BaseServer;
       channel: ChatChannel;
-      member: Member | User;
+      member?: Member | User;
     },
     client: Client,
     cache = client.cacheMessage ?? true
@@ -208,7 +208,7 @@ export class Message {
 
   awaitReactions(options?: collectorOptions<MessageReaction>) {
     return new Promise((resolve) => {
-      this.createReactionCollector(options).once('end', (item) =>
+      this.createReactionCollector(options).once('end', (item: any) =>
         resolve(item)
       );
     });
@@ -216,13 +216,13 @@ export class Message {
 }
 
 export class MessageReaction extends String {
+  id: number;
   message: Message;
   reactedBy: Member;
   createdBy: string;
   messageId: string;
   emote: Emote;
   channelId: string;
-  id: number;
 
   constructor(
     reaction: APIMessageReaction,

@@ -3,6 +3,7 @@ import EventEmitter from 'events';
 import { GuildedApiError } from '../errors/apiError';
 import { request } from 'https';
 import { Client } from '../Client';
+import { OutgoingHttpHeaders } from 'http';
 
 const version = '0.0.1';
 const userAgent = `Mr.Gil (guilded, ${version})`;
@@ -54,16 +55,22 @@ export class RESTManager extends EventEmitter {
       if (options?.params)
         for (const [key, value] of Object.entries(options.params))
           searchParams.append(key, value.toString());
+
       const req = request(
         {
           hostname: options?.host || `www.guilded.gg`,
           path: options.uri || `/api/v${this.version}` + path + searchParams,
           method,
-          headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': userAgent,
-            Authorization: `Bearer ${this.token}`
-          }
+          headers: options.token
+            ? {
+                'Content-Type': 'application/json',
+                'User-Agent': userAgent
+              }
+            : {
+                'Content-Type': 'application/json',
+                'User-Agent': userAgent,
+                Authorization: `Bearer ${this.token}`
+              }
         },
         async (response) => {
           var body = '';
@@ -96,7 +103,9 @@ export class RESTManager extends EventEmitter {
 
           response.on('end', () => {
             try {
-              resolve(JSON.parse(body));
+              const json = JSON.parse(body);
+              if (json.code) reject(JSON.stringify(json));
+              else resolve(json);
             } catch (e: any) {
               throw new GuildedApiError(e);
             }
@@ -150,6 +159,7 @@ export interface FetchOptions<
   B = any,
   P extends Record<string, any> = Record<string, any>
 > {
+  token?: string;
   uri?: string;
   host?: string;
   port?: any;

@@ -17,6 +17,7 @@ import { Collection } from './Collection';
 import { Doc } from './Doc';
 import { Message } from './Message';
 import { BaseServer } from './Server';
+import { Webhook } from './Webhook';
 
 type messageSend = {
   content?: string;
@@ -24,6 +25,12 @@ type messageSend = {
   replyIds?: string[];
   private?: boolean;
   silent?: boolean;
+  webhook?: string | webhook;
+};
+
+type webhook = {
+  id: string;
+  token: string;
 };
 
 export type AnyChannel = BaseChannel & ChatChannel & DocChannel;
@@ -169,24 +176,68 @@ export class ChatChannel extends BaseChannel {
 
     return new Promise(async (resolve, reject) => {
       try {
-        const { message }: { message: APIMessage } =
-          await this.client.rest.post(link, {
-            body: JSON.stringify(data)
-          });
-        resolve(
-          new Message(
-            message,
-            {
-              server: this.server,
-              channel: this,
-              member: await this.server.members.fetch(
-                message.createdBy,
-                message.serverId
-              )
-            },
-            this.client
-          )
-        );
+        if (
+          (typeof text == 'string' && options?.webhook) ||
+          (typeof text !== 'string' && text?.webhook)
+        ) {
+          let uri;
+
+          if (options) {
+            if (typeof options.webhook !== 'string') {
+              uri = Routes.webhookExecute(
+                options?.webhook.id,
+                options?.webhook.token
+              );
+            } else if (typeof options.webhook == 'string') {
+              uri = options.webhook.replace('https://media.guilded.gg', '');
+            }
+          } else if (typeof text !== 'string') {
+            if (typeof text.webhook !== 'string') {
+              uri = Routes.webhookExecute(
+                text?.webhook.id,
+                text?.webhook.token
+              );
+            } else if (typeof text.webhook == 'string') {
+              uri = text.webhook.replace('https://media.guilded.gg', '');
+            }
+          }
+
+          const { message }: { message: APIMessage } =
+            await this.client.rest.https('', 'POST', {
+              host: `media.guilded.gg`,
+              uri: uri,
+              body: JSON.stringify(data)
+            });
+          resolve(
+            new Message(
+              message,
+              {
+                server: this.server,
+                channel: this
+              },
+              this.client
+            )
+          );
+        } else {
+          const { message }: { message: APIMessage } =
+            await this.client.rest.post(link, {
+              body: JSON.stringify(data)
+            });
+          resolve(
+            new Message(
+              message,
+              {
+                server: this.server,
+                channel: this,
+                member: await this.server.members.fetch(
+                  message.createdBy,
+                  message.serverId
+                )
+              },
+              this.client
+            )
+          );
+        }
       } catch (err: any) {
         throw new GuildedApiError(err);
       }

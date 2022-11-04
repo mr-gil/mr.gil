@@ -98,6 +98,6 @@ export interface collectorOptions<type> {
 
 export type Filter<type> = (item: type) => boolean | Promise<boolean>;
 
-type collectorItem = {
+export type collectorItem = {
   id: string | number;
 };

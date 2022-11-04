@@ -6,17 +6,18 @@
 
 # Coming soon.
 
-
 ## What's Implemented ?
 
-- **15/43 Events**
+- **17/44 Events**
 
 ### ChatMessage
+
 - ChatMessageCreated (messageCreate event)
 - ChatMessageDeleted (messageDelete event)
 - ChatMessageUpdated (messageUpdate event)
 
 ### TeamMember
+
 - TeamMemberJoined (memberJoin event)
 - TeamMemberRemoved (memberRemove event)
 - TeamMemberBanned (memberBan event)
@@ -24,21 +25,30 @@
 - TeamMemberUpdated (memberUpdate event)
 
 ### Doc
+
 - DocCreated (docCreate event)
 - DocUpdated (docUpdate event)
 - DocDeleted (docDelete event)
 
 ### ChannelMessageReaction
+
 - ChannelMessageReactionCreated (reactionCreate event)
 - ChannelMessageReactionDeleted (reactionDelete event)
 
 ### teamRoles
+
 - teamRolesUpdated (roleUpdate event)
 
 ### BotMember
+
 - BotTeamMembershipCreated (botCreate event)
 
-----------------
+### TeamWebhook
+
+- TeamWebhookCreated (webhookCreate event)
+- TeamWebhookUpdated (webhookUpdate event)
+
+---
 
 We do also support [Guilded API Websocket events](https://www.guilded.gg/docs/api/websockets) (like `ChatMessageCreated`)
 

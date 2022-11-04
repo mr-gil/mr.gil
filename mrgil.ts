@@ -1,2 +1,2 @@
-export { Client } from "./src/Client";
-export { MessageEmbed } from "./src/builder";
+export { Client } from './src/Client';
+export { MessageEmbed, DocBuilder } from './src/builder';

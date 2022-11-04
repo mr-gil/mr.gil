@@ -1,4 +1,4 @@
-import { APIError } from "guilded-api-typings";
+import { APIError } from 'guilded-api-typings';
 
 export class GuildedApiError extends Error {
   /**
@@ -7,19 +7,24 @@ export class GuildedApiError extends Error {
    */
 
   constructor(err: APIError | any) {
-    const msg = (err as string)
+    console.log(err);
+    const errJSON = JSON.parse(err);
+    const msg = !errJSON
       ? `"${err}"`
-      : (err.code ? err.code + ": " : "") +
-        err.message +
-        (err.meta ? " - " + err.meta[Object.keys(err.meta)[0]][0] : "");
-    super(
+      : (errJSON.code ? errJSON.code + ': ' : '') +
+        errJSON.message +
+        (errJSON.meta
+          ? ' - ' + errJSON.meta[Object.keys(errJSON.meta)[0]][0]
+          : '');
+    super(msg);
+    /** 
       err.code === "ENOTFOUND"
         ? "You don't have access to the Guilded api.\n\nThis may due to the hosting server\n"
         : msg
-    );
+        */
   }
 }
 
-Object.defineProperty(GuildedApiError.prototype, "name", {
-  value: "GuildedApiError",
+Object.defineProperty(GuildedApiError.prototype, 'name', {
+  value: 'GuildedApiError'
 });

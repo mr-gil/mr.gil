@@ -15,7 +15,7 @@ export class Webhook {
   id: string;
   token: string;
 
-  constructor(public channel: BaseChannel, web: APIWebhook) {
+  constructor(public _channel: BaseChannel, web: APIWebhook) {
     this.name = web.name;
     this.serverId = web.serverId;
     this.channelId = web.channelId;
@@ -25,12 +25,15 @@ export class Webhook {
     this.token = web.token;
     this.id = web.id;
 
-    channel.webhooks.cache.set(this.name, this);
+    this.channel.webhooks.cache.set(this.name, this);
   }
   get server() {
     return this.channel.server;
   }
 
+  get channel() {
+    return this._channel;
+  }
   get author() {
     return this.channel.server.members.fetch(
       this.createdBy,
@@ -69,13 +72,13 @@ export class Webhook {
 
     return new Promise(async (resolve) => {
       try {
-        const { message }: { message: APIMessage } =
-          await this.channel.client.rest.https('', 'POST', {
-            host: `https://media.guilded.gg`,
-            uri: `${Routes.webhookExecute(this.id, this.token)}`,
-            body: JSON.stringify(data)
-          });
-
+        const me = await this.channel.client.rest.https('', 'POST', {
+          host: `media.guilded.gg`,
+          uri: `${Routes.webhookExecute(this.id, this.token)}`,
+          body: JSON.stringify(data)
+        });
+        return console.log(me);
+        /** 
         const m = new Message(
           message,
           {
@@ -90,6 +93,7 @@ export class Webhook {
         );
 
         resolve(m);
+        */
       } catch (err) {
         resolve(false);
         throw new GuildedApiError(err);
