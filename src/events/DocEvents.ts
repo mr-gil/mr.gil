@@ -1,7 +1,12 @@
+import { APIDoc } from 'guilded-api-typings';
 import { Client } from '../Client';
 import { Doc } from '../components/Doc';
 
-export async function DocEvents(type: string, data: any, client: Client) {
+export async function DocEvents(
+  type: string,
+  data: { serverId: string; doc: APIDoc },
+  client: Client
+) {
   const channel = await client.channels.fetch(data.doc.channelId);
 
   if (type == 'DocCreated') {
@@ -9,7 +14,7 @@ export async function DocEvents(type: string, data: any, client: Client) {
       channel: channel,
       member: await channel.server.members.fetch(
         data.doc.createdBy,
-        channel.serverId
+        data.serverId
       )
     });
 

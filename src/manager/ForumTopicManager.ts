@@ -57,14 +57,14 @@ export class ForumTopicManager extends BaseManager {
         this.cache.set(forum.id, forum);
         resolve(forum);
       } else {
-        const { forumTopic }: { forumTopic: APIForumTopic[] } =
+        const { forumTopics }: { forumTopics: APIForumTopic[] } =
           await this.client.rest.get(Routes.forumTopics(this.channel.id));
 
         const col: Collection<number, ForumTopic> = new Collection([], {
           client: this.client
         });
 
-        forumTopic.forEach(async (f: APIForumTopic) => {
+        forumTopics.forEach(async (f: APIForumTopic) => {
           const cac = this.cache.get(f.id);
           if (cac) {
             col.set(cac.id, cac);

@@ -1,19 +1,23 @@
-import { Client } from "../Client";
-import { BaseServer, Member } from "../components";
+import { Client } from '../Client';
+import { BaseServer, Member } from '../components';
 
-export async function TeamRolesEvent(type: string, data: any, client: Client) {
+export async function TeamRolesEvent(
+  type: string,
+  data: { serverId: string; memberRoleIds: memberRoles[] },
+  client: Client
+) {
   const server = await client.servers.fetch(data.serverId);
   const updates: updates[] = [];
 
   var format = new Promise<void>((resolve) => {
     data.memberRoleIds.forEach(
-      async (m: { userId: string; roleIds: number[] }, index: number, array: string | any[]) => {
+      async (m: memberRoles, index: number, array: string | any[]) => {
         const member = await server.members.fetch(m.userId, server.id);
 
         updates.push({
           userId: m.userId,
           member,
-          roleIds: m.roleIds,
+          roleIds: m.roleIds
         });
         if (index === array.length - 1) resolve();
       }
@@ -23,8 +27,8 @@ export async function TeamRolesEvent(type: string, data: any, client: Client) {
   format.then(() => {
     const obj: roleUpdate = { server, updates };
 
-    client.emit("roleUpdate", obj);
-    client.emit("teamRolesUpdated", obj);
+    client.emit('roleUpdate', obj);
+    client.emit('teamRolesUpdated', obj);
   });
 }
 
@@ -38,3 +42,5 @@ type roleUpdate = {
   server?: BaseServer;
   updates?: updates[];
 };
+
+type memberRoles = { userId: string; roleIds: number[] };

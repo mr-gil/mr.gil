@@ -1,16 +1,23 @@
+import { APIMessage } from 'guilded-api-typings/typings';
 import { Client } from '../Client';
 import { Message } from '../components';
 
-export async function MessageEvents(type: string, data: any, client: Client) {
+export async function MessageEvents(
+  type: string,
+  data: { serverId: string; message: APIMessage & { deletedAt: Date } },
+  client: Client
+) {
   const channel = await client.channels.fetch(data.message.channelId);
   if (type === 'ChatMessageUpdated') {
     const oldMessage = channel.messages.cache.get(data.message.id);
     const newMessage = new Message(data.message, {
       channel: channel,
-      member: await channel.server.members.fetch(
-        data.message.createdBy,
-        data.serverId
-      )
+      member: data.message.createdByWebhookId
+        ? await channel.webhooks.fetch(data.message.createdByWebhookId)
+        : await channel.server.members.fetch(
+            data.message.createdBy,
+            data.serverId
+          )
     });
 
     client.emit('messageUpdate', newMessage, oldMessage);

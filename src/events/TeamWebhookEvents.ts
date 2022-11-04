@@ -1,9 +1,10 @@
+import { APIWebhook } from 'guilded-api-typings/typings';
 import { Client } from '../Client';
 import { Webhook } from '../components';
 
 export async function TeamWebhookEvents(
   type: string,
-  data: any,
+  data: { serverId: string; webhook: APIWebhook },
   client: Client
 ) {
   const channel = await client.channels.fetch(data.webhook.channelId);

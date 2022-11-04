@@ -13,6 +13,7 @@ export class Doc {
   deleted: boolean;
   id: number;
   mentions: Mentions;
+  obj: { channel: DocChannel; member: Member };
   private _client: Client;
   serverId: string;
   title: string;
@@ -21,7 +22,7 @@ export class Doc {
 
   constructor(
     doc: APIDoc,
-    private obj: { channel: DocChannel; member: Member },
+    obj: { channel: DocChannel; member: Member },
     cache = obj.channel.client.cacheDocs ?? true
   ) {
     this.id = doc.id;
@@ -38,6 +39,12 @@ export class Doc {
       this.updatedAt = new Date(doc.updatedAt);
       this.updatedBy = doc.updatedBy;
     }
+
+    Object.defineProperty(this, 'obj', {
+      enumerable: false,
+      writable: false,
+      value: obj
+    });
 
     if (cache) this.channel.docs.cache.set(this.id, this);
   }

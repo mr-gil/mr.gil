@@ -54,10 +54,11 @@ export class BaseChannel {
   type: ChannelType;
   updatedAt: Date;
   webhooks: WebhookManager;
+  obj: { server: BaseServer };
 
   constructor(
     channel: APIChannel,
-    private obj: { server: BaseServer },
+    obj: { server: BaseServer },
     client: Client
   ) {
     Object.defineProperty(this, '_client', {
@@ -66,6 +67,11 @@ export class BaseChannel {
       value: client
     });
 
+    Object.defineProperty(this, 'obj', {
+      enumerable: false,
+      writable: false,
+      value: obj
+    });
     this.id = channel.id;
     this.type = channel.type;
     this.name = channel.name;
@@ -328,6 +334,41 @@ export class ForumChannel extends BaseChannel {
   ) {
     super(channel, obj, client);
     this.forums = new ForumTopicManager(this);
+  }
+
+  fetchBulk(
+    options: {
+      before?: string;
+      limit?: number;
+    } = { limit: 15 }
+  ) {
+    const link = Routes.forumTopics(this.id);
+
+    if (options.limit > 100) options.limit = 100;
+
+    return new Promise(async (resolve, reject) => {
+      try {
+        const { forumTopics }: { forumTopics: APIForumTopic[] } =
+          await this.client.rest.get(link, {
+            body: JSON.stringify(options)
+          });
+
+        const col = new Collection([], { client: this.client });
+
+        forumTopics.forEach(async (f) => {
+          const fr = new ForumTopic(f, {
+            channel: this,
+            member: await this.server.members.fetch(f.createdBy, this.serverId)
+          });
+
+          col.set(fr.id, fr);
+        });
+
+        resolve(col);
+      } catch (err: any) {
+        throw new GuildedApiError(err);
+      }
+    });
   }
 
   post(title: string | ForumBuilder, content?: string) {

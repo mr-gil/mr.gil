@@ -8,13 +8,23 @@
 
 ## What's Implemented ?
 
-- **17/40 Events**
+- **26/40 Events**
 
 ### ChatMessage
 
 - ChatMessageCreated (messageCreate event)
 - ChatMessageDeleted (messageDelete event)
 - ChatMessageUpdated (messageUpdate event)
+
+### ForumTopic
+
+- ForumTopicCreated (topicCreate event)
+- ForumTopicUpdated (topicUpdate event)
+- ForumTopicDeleted (topicDelete event)
+- ForumTopicPinned (topicPin event)
+- ForumTopicUnpinned (topicUnpin event)
+- ForumTopicLocked (topicLock event)
+- ForumTopicUnlocked (topicUnlock event)
 
 ### TeamMember
 
@@ -32,8 +42,13 @@
 
 ### ChannelMessageReaction
 
-- ChannelMessageReactionCreated (reactionCreate event)
-- ChannelMessageReactionDeleted (reactionDelete event)
+- ChannelMessageReactionCreated (messageReact event)
+- ChannelMessageReactionDeleted (messageUnreact event)
+
+### ForumTopicReaction
+
+- ForumTopicReactionCreated (topicReact event)
+- ForumTopicReactionDeleted (topicUnreact event)
 
 ### teamRoles
 

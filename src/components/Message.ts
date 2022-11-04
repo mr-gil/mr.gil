@@ -23,10 +23,14 @@ export class Message {
   replies?: string[];
   silent?: boolean;
   webhook?: Webhook | boolean;
+  private obj: {
+    channel: ChatChannel;
+    member?: Member | Webhook;
+  };
 
   constructor(
     message: APIMessage,
-    private obj: {
+    obj: {
       channel: ChatChannel;
       member?: Member | Webhook;
     },
@@ -45,6 +49,11 @@ export class Message {
       enumerable: false,
       writable: false,
       value: this.channel.client
+    });
+    Object.defineProperty(this, 'obj', {
+      enumerable: false,
+      writable: true,
+      value: obj
     });
 
     Object.defineProperty(this, 'apiMessage', {
@@ -89,6 +98,21 @@ export class Message {
 
   get client() {
     return this._client;
+  }
+
+  delete() {
+    const link = Routes.message(this.channel.id, this.id);
+
+    return new Promise(async (resolve) => {
+      try {
+        await this.channel.client.rest.delete(link);
+
+        resolve(true);
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
   }
 
   reply(text: string | messageSend, options: messageSend) {
@@ -184,6 +208,34 @@ export class Message {
 
         resolve(msg);
       } catch (err: any) {
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+
+  react(emojiId: number) {
+    const link = Routes.reaction(this.channel.id, this.id, emojiId);
+
+    return new Promise(async (resolve) => {
+      try {
+        await this.channel.client.rest.put(link);
+        resolve(true);
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+
+  unreact(emojiId: number) {
+    const link = Routes.reaction(this.channel.id, this.id, emojiId);
+
+    return new Promise(async (resolve) => {
+      try {
+        await this.channel.client.rest.delete(link);
+        resolve(true);
+      } catch (err) {
+        resolve(false);
         throw new GuildedApiError(err);
       }
     });

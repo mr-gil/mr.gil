@@ -46,15 +46,22 @@ export class Member extends String {
   isOwner: boolean;
   joinedAt: Date;
   nickname: Nickname;
+  obj: { server: BaseServer; user: User };
   private _client: Client;
   roles: number[];
   user: User;
 
   constructor(
     member: APIServerMember,
-    private obj: { server: BaseServer; user: User }
+    obj: { server: BaseServer; user: User }
   ) {
     super();
+
+    Object.defineProperty(this, 'obj', {
+      enumerable: false,
+      writable: true,
+      value: obj
+    });
 
     this.user = obj.user;
     this.id = member.user.id;
