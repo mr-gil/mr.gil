@@ -1,4 +1,10 @@
-import { APIEmote, APIServer, APIServerBan, Routes } from 'guilded-api-typings';
+import {
+  APIEmote,
+  APIServer,
+  APIServerBan,
+  Routes,
+  ServerType
+} from 'guilded-api-typings';
 import { Client } from '../Client';
 import { Collection, MemberCollection } from './Collection';
 import { MemberBan } from './MemberBan';
@@ -26,30 +32,22 @@ export class Emote {
 }
 
 export class BaseServer {
-  id: string;
-  name: string;
-  icon: string;
-  avatar: string;
   about: string;
-  isVerified: boolean;
+  avatar: string;
   banner: string;
-  ownerId: string;
+  bans: Bans;
   createdAt: Date;
   defaultChannelId: string;
-  timezone: string;
+  icon: string;
+  id: string;
+  isVerified: boolean;
   members: MemberCollection;
+  name: string;
+  ownerId: string;
+  timezone: string;
+  type: ServerType;
   url: string;
-  type:
-    | 'team'
-    | 'organization'
-    | 'community'
-    | 'clan'
-    | 'guild'
-    | 'friends'
-    | 'streaming'
-    | 'other';
   verified: boolean;
-  bans: Bans;
 
   constructor(server: APIServer, client: Client) {
     this.id = server.id;

@@ -1,27 +1,27 @@
-import ws from "ws";
-import { Client } from "../Client";
-import { GuildedApiError } from "../errors/apiError";
+import ws from 'ws';
+import { Client } from '../Client';
+import { GuildedApiError } from '../errors/apiError';
 
-const version = "0.0.1";
+const version = '0.0.1';
 const userAgent = `Mr.Gil (guilded, ${version})`;
 
 /**
  * The Shard class that is just used for Websocket connection
- * 
+ *
  * No real use for `end-user`
  * @extends {ws}
  */
 
 export class shard extends ws {
-  shard_id: number;
-  session_id: string;
   client: Client;
-  socket?: WebSocket;
-  reconnects = 0;
   lastMessageId?: string;
-  readyAt: number;
-  token: string;
   options: any;
+  readyAt: number;
+  reconnects = 0;
+  session_id: string;
+  shard_id: number;
+  socket?: WebSocket;
+  token: string;
 
   /**
    * Constructor to create a new Shard instance
@@ -46,28 +46,28 @@ export class shard extends ws {
         {
           headers: {
             Authorization: `Bearer ${options.token}`,
-            "User-Agent": userAgent,
-            "guilded-last-message-id": options.lastMessageId ?? "",
-          },
+            'User-Agent': userAgent,
+            'guilded-last-message-id': options.lastMessageId ?? ''
+          }
         },
-        ...argument,
+        ...argument
       ]
     );
 
     this.shard_id = shardid;
-    Object.defineProperty(this, "client", {
+    Object.defineProperty(this, 'client', {
       enumerable: false,
       value: client,
-      writable: false,
+      writable: false
     });
     if (options.sessionId) {
       this.session_id = options.sessionId;
     }
 
-    this.on("open", () => {
+    this.on('open', () => {
       this.client.readyTimestamp = Date.now();
     });
-    this.on("message", (data) => {
+    this.on('message', (data) => {
       const { t: eventType, d: eventData } = this.client.processData(
         data.toString()
       );
@@ -76,11 +76,11 @@ export class shard extends ws {
       this.client.interact(jsondata);
     });
 
-    this.on("close", () => {
+    this.on('close', () => {
       this.onSocketDisconnect.bind(this);
     });
-    this.on("error", (e) => {
-      this.client.emit("apiError", e);
+    this.on('error', (e) => {
+      this.client.emit('apiError', e);
       throw new GuildedApiError(e);
     });
   }
@@ -98,10 +98,10 @@ export class shard extends ws {
       !this.options.reconnect ||
       this.reconnects >= (this.options.maxReconnects ?? Infinity)
     )
-      return this.emit("disconnect", this);
+      return this.emit('disconnect', this);
     this.reconnects++;
     this.client.reconnect(this);
-    this.emit("reconnect", this);
+    this.emit('reconnect', this);
   }
 
   /**
@@ -118,8 +118,8 @@ export class shard extends ws {
    * @param type
    * @returns {void} void
    */
-  format(data: object, type = "json") {
-    return this.send(type == "json" ? JSON.stringify(data) : data);
+  format(data: object, type = 'json') {
+    return this.send(type == 'json' ? JSON.stringify(data) : data);
   }
 
   /**

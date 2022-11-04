@@ -1,11 +1,11 @@
-import { APIDoc } from "guilded-api-typings";
+import { APIDoc } from 'guilded-api-typings';
 
 export class DocBuilder {
-  title: string;
   content: string;
+  title?: string;
 
   constructor(data: APIDoc) {
-    this.title = data.title;
+    this.title = data.title || 'New Document';
     this.content = data.content;
   }
 

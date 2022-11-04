@@ -1,14 +1,14 @@
-import { EventEmitter } from "stream";
-import { User } from "./components";
+import { EventEmitter } from 'stream';
+import { User } from './components';
 import {
   ChannelCollection,
   ServerCollection,
-  UserCollection,
-} from "./components/Collection";
-import { GuildedApiError } from "./errors/apiError";
-import { RESTManager } from "./manager/RESTManager";
-import { dispatch } from "./misc/dispatch";
-import { shard } from "./ws/shard";
+  UserCollection
+} from './components/Collection';
+import { GuildedApiError } from './errors/apiError';
+import { RESTManager } from './manager/RESTManager';
+import { dispatch } from './misc/dispatch';
+import { shard } from './ws/shard';
 
 /**
  * The Client options to create a instance of the core (optional)
@@ -37,20 +37,20 @@ type clientOptions = {
  */
 
 export class Client extends EventEmitter {
-  private token: string;
-  public gateway: number;
-  shards: any[];
+  cacheDocs?: boolean;
+  cacheMessage: boolean;
+  cacheSize: number;
+  channels: ChannelCollection;
+  gateway: number;
+  proxyUrl: string;
   readyTimestamp: number;
   readonly rest: RESTManager;
-  proxyUrl: string;
   resumeTimes: number;
+  servers: ServerCollection;
+  shards: any[];
+  private token: string;
   user: User;
   users: UserCollection;
-  servers: ServerCollection;
-  channels: ChannelCollection;
-  cacheSize: number;
-  cacheMessage: boolean;
-  cacheDocs?: boolean;
 
   /**
    * Constructor to create a new Client instance
@@ -60,15 +60,15 @@ export class Client extends EventEmitter {
    */
   constructor(options: clientOptions = { versionGateway: 1 }) {
     super();
-    Object.defineProperty(this, "token", {
+    Object.defineProperty(this, 'token', {
       enumerable: false,
       writable: true,
-      value: options?.token,
+      value: options?.token
     });
-    Object.defineProperty(this, "gateway", {
+    Object.defineProperty(this, 'gateway', {
       enumerable: false,
       writable: false,
-      value: options?.versionGateway ?? 1,
+      value: options?.versionGateway ?? 1
     });
 
     /**
@@ -79,7 +79,7 @@ export class Client extends EventEmitter {
       token: this.token,
       version: 1,
       maxRetries: options?.restRetries,
-      retryInterval: options?.restRetryInterval,
+      retryInterval: options?.restRetryInterval
     });
     this.shards = [];
     this.cacheSize = options?.cacheSize;
@@ -117,17 +117,17 @@ export class Client extends EventEmitter {
   login(token: string) {
     if (!token)
       throw new GuildedApiError(
-        "Please provide an token to start your Guilded bot."
+        'Please provide an token to start your Guilded bot.'
       );
 
-    if (typeof token == "string")
-      this.token = token = token.replace(/^(Bot|Bearer)\s*/i, "");
+    if (typeof token == 'string')
+      this.token = token = token.replace(/^(Bot|Bearer)\s*/i, '');
 
     try {
       this.rest.setSecret(this.token);
 
       const socket = new shard(this.url, this.shards.length, this, {
-        token: this.token,
+        token: this.token
       });
       this.readyTimestamp = socket.readyTimestamp();
 
@@ -178,14 +178,14 @@ export class Client extends EventEmitter {
 
     this.resumeTimes++;
 
-    nshard.once("open", () => {
+    nshard.once('open', () => {
       nshard.format({
         op: 6,
         d: {
           token: this.token,
           session_id: sessionID,
-          seq: 1337,
-        },
+          seq: 1337
+        }
       });
     });
     this.shards[shardlamaID] = nshard;

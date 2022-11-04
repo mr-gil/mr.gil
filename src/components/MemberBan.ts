@@ -2,11 +2,11 @@ import { APIServerBan } from 'guilded-api-typings/typings';
 import { User } from './User';
 
 export class MemberBan {
-  reason: string;
-  bannedBy: string;
-  createdBy: string;
-  createdAt: Date;
   bannedAt: Date;
+  bannedBy: string;
+  createdAt: Date;
+  createdBy: string;
+  reason: string;
 
   constructor(data: APIServerBan, private obj: { user: User }) {
     this.reason = data.reason;

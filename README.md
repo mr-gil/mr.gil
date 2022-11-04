@@ -8,7 +8,7 @@
 
 ## What's Implemented ?
 
-- **17/44 Events**
+- **17/40 Events**
 
 ### ChatMessage
 

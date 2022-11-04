@@ -7,18 +7,18 @@ import { BaseServer } from './Server';
 import { Member } from './User';
 
 export class Doc {
-  id: number;
-  title: string;
-  createdAt: Date;
-  createdBy: string;
-  serverId: string;
   channelId: string;
   content: string;
-  updatedBy: string;
-  updatedAt: Date;
-  private _client: Client;
-  mentions: Mentions;
+  createdAt: Date;
+  createdBy: string;
   deleted: boolean;
+  id: number;
+  mentions: Mentions;
+  private _client: Client;
+  serverId: string;
+  title: string;
+  updatedAt: Date;
+  updatedBy: string;
 
   constructor(
     doc: APIDoc,

@@ -3,21 +3,21 @@ import {
   APIEmbedAuthor,
   APIEmbedField,
   APIEmbedFooter,
-  APIEmbedMedia,
-} from "guilded-api-typings";
-import { ColorResolvable, resolveColor } from "../misc/util";
+  APIEmbedMedia
+} from 'guilded-api-typings';
+import { ColorResolvable, resolveColor } from '../misc/util';
 
 export class MessageEmbed {
-  title?: string;
-  description?: string;
-  url?: string;
-  color?: ColorResolvable;
-  footer?: APIEmbedFooter;
-  timestamp?: Date;
-  thumbnail?: APIEmbedMedia;
-  image?: APIEmbedMedia;
   author?: APIEmbedAuthor;
+  color?: ColorResolvable;
+  description?: string;
   fields: APIEmbedField[];
+  footer?: APIEmbedFooter;
+  image?: APIEmbedMedia;
+  thumbnail?: APIEmbedMedia;
+  timestamp?: Date;
+  title?: string;
+  url?: string;
 
   constructor(data: APIEmbed = {}) {
     this.title = data.title;
@@ -73,7 +73,7 @@ export class MessageEmbed {
   }
 
   setAuthor(author?: string | APIEmbedAuthor) {
-    this.author = typeof author === "string" ? { name: author } : author;
+    this.author = typeof author === 'string' ? { name: author } : author;
     return this;
   }
 

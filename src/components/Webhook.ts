@@ -3,16 +3,15 @@ import { GuildedApiError } from '../errors/apiError';
 import { FetchOptions } from '../manager/BaseManager';
 import { BaseChannel, ChatChannel } from './Channel';
 import { Message, messageSend } from './Message';
-import { BaseServer } from './Server';
 
 export class Webhook {
-  name: string;
-  serverId: string;
   channelId: string;
   createdAt: Date;
   createdBy: string;
   deletedAt: Date;
   id: string;
+  name: string;
+  serverId: string;
   token: string;
 
   constructor(public _channel: BaseChannel, web: APIWebhook) {
@@ -72,28 +71,24 @@ export class Webhook {
 
     return new Promise(async (resolve) => {
       try {
-        const me = await this.channel.client.rest.https('', 'POST', {
-          host: `media.guilded.gg`,
-          uri: `${Routes.webhookExecute(this.id, this.token)}`,
-          body: JSON.stringify(data)
-        });
-        return console.log(me);
-        /** 
+        const { message }: { message: APIMessage } =
+          await this.channel.client.rest.https('', 'POST', {
+            host: `media.guilded.gg`,
+            uri: `${Routes.webhookExecute(this.id, this.token)}`,
+            body: JSON.stringify(data)
+          });
+
         const m = new Message(
           message,
           {
             server: this.server,
             channel: this.channel as ChatChannel,
-            member: await this.server.members.fetch(
-              message.createdBy,
-              message.serverId
-            )
+            member: this
           },
           this.channel.client
         );
 
         resolve(m);
-        */
       } catch (err) {
         resolve(false);
         throw new GuildedApiError(err);

@@ -3,7 +3,6 @@ import EventEmitter from 'events';
 import { GuildedApiError } from '../errors/apiError';
 import { request } from 'https';
 import { Client } from '../Client';
-import { OutgoingHttpHeaders } from 'http';
 
 const version = '0.0.1';
 const userAgent = `Mr.Gil (guilded, ${version})`;

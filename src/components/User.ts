@@ -11,12 +11,12 @@ import { MemberBan } from './MemberBan';
 import { BaseServer } from './Server';
 
 export class User extends String {
-  name: string;
-  id: string;
-  bot: boolean;
   avatar: string;
-  createdAt: Date;
   banner: string;
+  bot: boolean;
+  createdAt: Date;
+  id: string;
+  name: string;
 
   constructor(user: APIUser | APIUserSummary) {
     super(user.name);
@@ -42,13 +42,13 @@ export class User extends String {
 }
 
 export class Member extends String {
-  nickname: Nickname;
   id: string;
-  roles: number[];
   isOwner: boolean;
   joinedAt: Date;
-  user: User;
+  nickname: Nickname;
   private _client: Client;
+  roles: number[];
+  user: User;
 
   constructor(
     member: APIServerMember,

@@ -4,7 +4,7 @@ import {
   APIMessageReaction,
   Routes
 } from 'guilded-api-typings';
-import { BaseServer, Emote, ChatChannel, Member, User } from '.';
+import { BaseServer, Emote, ChatChannel, Member, User, Webhook } from '.';
 import { MessageEmbed } from '../builder';
 import { Client } from '../Client';
 import { collectorOptions } from '../collectors/BaseCollector';
@@ -14,33 +14,33 @@ import { GuildedApiError } from '../errors/apiError';
 export class Message {
   content: string;
   createdAt: Date;
-  mentions: mentionTypes;
-  private _client: Client;
-  replies: string[];
-  private apiMessage: APIMessage;
-  private: boolean;
-  silent: boolean;
-  webhook: boolean | { id: string };
+  deletedAt?: Date;
   id: string;
-  deletedAt: Date;
+  mentions?: Mentions;
+  private _client: Client;
+  private apiMessage: APIMessage;
+  private?: boolean;
+  replies?: string[];
+  silent?: boolean;
+  webhook?: Webhook | boolean;
 
   constructor(
     message: APIMessage,
     private obj: {
       server: BaseServer;
       channel: ChatChannel;
-      member?: Member | User;
+      member?: Member | User | Webhook;
     },
     client: Client,
     cache = client.cacheMessage ?? true
   ) {
     const {
-      mentions,
-      id,
       createdAt,
       createdByWebhookId,
+      id,
       isPrivate,
       isSilent,
+      mentions,
       replyMessageIds
     } = message;
     Object.defineProperty(this, '_client', {
@@ -58,8 +58,7 @@ export class Message {
     this.content = message.content;
     this.private = isPrivate;
     this.silent = isSilent;
-    this.webhook =
-      createdByWebhookId != '' ? { id: createdByWebhookId } : false;
+    this.webhook = createdByWebhookId != '' ? (this.member as Webhook) : false;
     this.createdAt = new Date(createdAt);
     this.mentions = new Mentions(mentions);
 
@@ -216,13 +215,13 @@ export class Message {
 }
 
 export class MessageReaction extends String {
+  channelId: string;
+  createdBy: string;
+  emote: Emote;
   id: number;
   message: Message;
-  reactedBy: Member;
-  createdBy: string;
   messageId: string;
-  emote: Emote;
-  channelId: string;
+  reactedBy: Member;
 
   constructor(
     reaction: APIMessageReaction,
@@ -255,10 +254,10 @@ export class MessageReaction extends String {
 }
 
 export class Mentions {
-  users: mentionObj[];
-  roles: mentionObj[];
   everyone: boolean;
   here: boolean;
+  roles: mentionObj[];
+  users: mentionObj[];
   constructor(d: APIMentions) {
     if (d == undefined) return undefined;
     else {
@@ -273,19 +272,11 @@ export class Mentions {
 export type messageSend = {
   content?: string;
   embeds?: MessageEmbed[];
-  replyIds?: string[];
   private?: boolean;
+  replyIds?: string[];
   silent?: boolean;
 };
 
 type mentionObj = {
   id: string | number;
-};
-
-type mentionTypes = {
-  users?: mentionObj[];
-  roles?: mentionObj[];
-  channels?: mentionObj[];
-  everyone?: boolean;
-  here?: boolean;
 };

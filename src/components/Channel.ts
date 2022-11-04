@@ -17,7 +17,6 @@ import { Collection } from './Collection';
 import { Doc } from './Doc';
 import { Message } from './Message';
 import { BaseServer } from './Server';
-import { Webhook } from './Webhook';
 
 type messageSend = {
   content?: string;
@@ -36,21 +35,21 @@ type webhook = {
 export type AnyChannel = BaseChannel & ChatChannel & DocChannel;
 
 export class BaseChannel {
-  id: string;
-  type: ChannelType;
-  name: string;
-  topic: string;
+  archivedAt: Date;
+  archivedBy: string;
+  category: number;
   createdAt: Date;
   createdBy: string;
-  updatedAt: Date;
-  serverId: string;
-  parent: string;
-  category: number;
   groupId: string;
-  public: boolean;
-  archivedBy: string;
-  archivedAt: Date;
+  id: string;
+  name: string;
+  parent: string;
   private _client: Client;
+  public: boolean;
+  serverId: string;
+  topic: string;
+  type: ChannelType;
+  updatedAt: Date;
   webhooks: WebhookManager;
 
   constructor(
@@ -213,7 +212,8 @@ export class ChatChannel extends BaseChannel {
               message,
               {
                 server: this.server,
-                channel: this
+                channel: this,
+                member: await this.webhooks.fetch(message.createdByWebhookId)
               },
               this.client
             )

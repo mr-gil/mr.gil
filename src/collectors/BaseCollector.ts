@@ -5,9 +5,9 @@ import { Collection } from '../components';
 export class BaseCollector<type extends collectorItem> extends EventEmitter {
   collected: Collection<type['id'], type>;
   createdAt: Date;
+  ended: boolean;
   endedAt: Date;
   idleTimeout: any;
-  ended: boolean;
 
   constructor(public client: Client, public options?: collectorOptions<type>) {
     super();
@@ -89,11 +89,11 @@ export interface collectorEvents<type> {
 }
 
 export interface collectorOptions<type> {
+  dispose?: boolean;
   filter?: Filter<type>;
-  time?: number;
   idle?: number;
   max?: number;
-  dispose?: boolean;
+  time?: number;
 }
 
 export type Filter<type> = (item: type) => boolean | Promise<boolean>;
