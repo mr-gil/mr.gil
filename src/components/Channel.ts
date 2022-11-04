@@ -3,17 +3,19 @@ import {
   APIDoc,
   APIMessage,
   ChannelType,
-  Routes,
-} from "guilded-api-typings";
-import { MessageEmbed, DocBuilder } from "../builder";
-import { Client } from "../Client";
-import { GuildedApiError } from "../errors/apiError";
-import { DocManager } from "../manager/DocManager";
-import { MessageManager } from "../manager/MessageManager";
-import { Collection } from "./Collection";
-import { Doc } from "./Doc";
-import { Message } from "./Message";
-import { BaseServer } from "./Server";
+  Routes
+} from 'guilded-api-typings';
+import { MessageEmbed, DocBuilder } from '../builder';
+import { Client } from '../Client';
+import { collectorOptions } from '../collectors/BaseCollector';
+import { MessageCollector } from '../collectors/MessageCollector';
+import { GuildedApiError } from '../errors/apiError';
+import { DocManager } from '../manager/DocManager';
+import { MessageManager } from '../manager/MessageManager';
+import { Collection } from './Collection';
+import { Doc } from './Doc';
+import { Message } from './Message';
+import { BaseServer } from './Server';
 
 type messageSend = {
   content?: string;
@@ -48,10 +50,10 @@ export class BaseChannel {
     obj: { server: BaseServer },
     client: Client
   ) {
-    Object.defineProperty(this, "_client", {
+    Object.defineProperty(this, '_client', {
       enumerable: false,
       writable: false,
-      value: client,
+      value: client
     });
 
     this.id = channel.id;
@@ -107,7 +109,7 @@ export class ChatChannel extends BaseChannel {
       try {
         const { messages }: { messages: APIMessage[] } =
           await this.client.rest.get(link, {
-            body: JSON.stringify(options),
+            body: JSON.stringify(options)
           });
 
         const msgs = new Collection([], { client: this.client });
@@ -121,7 +123,7 @@ export class ChatChannel extends BaseChannel {
               member: await this.server.members.fetch(
                 m.createdBy,
                 this.server.id
-              ),
+              )
             },
             this.client
           );
@@ -140,20 +142,20 @@ export class ChatChannel extends BaseChannel {
     const link = Routes.messages(this.id);
 
     const data =
-      typeof text == "string"
+      typeof text == 'string'
         ? {
             content: text,
             isPrivate: options?.private || false,
             isSilent: options?.silent || undefined,
             embeds: options?.embeds,
-            replyMessageIds: options?.replyIds,
+            replyMessageIds: options?.replyIds
           }
         : {
             content: text.content,
             isPrivate: text?.private,
             isSilent: text?.silent,
             embeds: text.embeds,
-            replyMessageIds: text?.replyIds,
+            replyMessageIds: text?.replyIds
           };
 
     if (data.embeds) {
@@ -164,7 +166,7 @@ export class ChatChannel extends BaseChannel {
       try {
         const { message }: { message: APIMessage } =
           await this.client.rest.post(link, {
-            body: JSON.stringify(data),
+            body: JSON.stringify(data)
           });
         resolve(
           new Message(
@@ -175,7 +177,7 @@ export class ChatChannel extends BaseChannel {
               member: await this.server.members.fetch(
                 message.createdBy,
                 message.serverId
-              ),
+              )
             },
             this.client
           )
@@ -183,6 +185,16 @@ export class ChatChannel extends BaseChannel {
       } catch (err: any) {
         throw new GuildedApiError(err);
       }
+    });
+  }
+
+  createMessageCollector(options?: collectorOptions<Message>) {
+    return new MessageCollector(this, options);
+  }
+
+  awaitMessages(options?: collectorOptions<Message>) {
+    return new Promise((resolve) => {
+      this.createMessageCollector(options).once('end', (item) => resolve(item));
     });
   }
 }
@@ -212,7 +224,7 @@ export class DocChannel extends BaseChannel {
     return new Promise(async (resolve, reject) => {
       try {
         const { docs }: { docs: APIDoc[] } = await this.client.rest.get(link, {
-          body: JSON.stringify(options),
+          body: JSON.stringify(options)
         });
 
         const dcs = new Collection([], { client: this.client });
@@ -226,7 +238,7 @@ export class DocChannel extends BaseChannel {
               member: await this.server.members.fetch(
                 d.createdBy,
                 this.server.id
-              ),
+              )
             },
             this.client
           );
@@ -253,11 +265,11 @@ export class DocChannel extends BaseChannel {
         } else
           data = {
             title: title as string,
-            content,
+            content
           };
 
         const { doc }: { doc: APIDoc } = await this.client.rest.post(link, {
-          body: JSON.stringify(data),
+          body: JSON.stringify(data)
         });
 
         resolve(
@@ -269,7 +281,7 @@ export class DocChannel extends BaseChannel {
               member: await this.server.members.fetch(
                 doc.createdBy,
                 doc.serverId
-              ),
+              )
             },
             this.client
           )

@@ -1,22 +1,22 @@
 import {
   APIMessage,
   APIMessageFetchManyOptions,
-  Routes,
-} from "guilded-api-typings";
-import { BaseManager, FetchManyOptions, FetchOptions } from ".";
-import { ChatChannel, Message } from "../components";
-import { Collection } from "../components/Collection";
+  Routes
+} from 'guilded-api-typings';
+import { BaseManager, FetchManyOptions, FetchOptions } from './BaseManager';
+import { ChatChannel, Message } from '../components';
+import { Collection } from '../components/Collection';
 
-export class MessageManager extends BaseManager{
+export class MessageManager extends BaseManager {
   readonly cache: Collection<string, Message>;
   channel: ChatChannel;
 
   constructor(channel: ChatChannel, maxCache = Infinity) {
-    super(channel.client)
+    super(channel.client);
     this.channel = channel;
     this.cache = new Collection([], {
       client: this.client,
-      maxSize: super.client.cacheSize || maxCache,
+      maxSize: super.client.cacheSize || maxCache
     });
   }
 
@@ -35,7 +35,7 @@ export class MessageManager extends BaseManager{
     options?: FetchOptions
   ): Promise<Collection<string, Message> | Message> {
     return new Promise(async (resolve, reject) => {
-      if (typeof msgId === "string") {
+      if (typeof msgId === 'string') {
         const cached = this.cache.get(msgId);
         if (cached && !options?.force) return resolve(cached);
 
@@ -52,7 +52,7 @@ export class MessageManager extends BaseManager{
             member: await server.members.fetch(
               message.createdBy,
               message.serverId
-            ),
+            )
           },
           this.client
         );
@@ -80,7 +80,7 @@ export class MessageManager extends BaseManager{
               {
                 server: server,
                 channel: await this.client.channels.fetch(m.channelId),
-                member: await server.members.fetch(m.createdBy, m.serverId),
+                member: await server.members.fetch(m.createdBy, m.serverId)
               },
               this.client
             );

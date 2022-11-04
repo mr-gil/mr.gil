@@ -1,14 +1,15 @@
 import {
   APIMentions,
   APIMessage,
-  APIMessageFetchManyOptions,
   APIMessageReaction,
-  Routes,
-} from "guilded-api-typings";
-import { BaseServer, Emote, ChatChannel, Member, User } from ".";
-import { MessageEmbed } from "../builder";
-import { Client } from "../Client";
-import { GuildedApiError } from "../errors/apiError";
+  Routes
+} from 'guilded-api-typings';
+import { BaseServer, Emote, ChatChannel, Member, User } from '.';
+import { MessageEmbed } from '../builder';
+import { Client } from '../Client';
+import { collectorOptions } from '../collectors/BaseCollector';
+import { MessageReactionCollector } from '../collectors/MessageReactionCollector';
+import { GuildedApiError } from '../errors/apiError';
 
 type messageSend = {
   content?: string;
@@ -76,25 +77,25 @@ export class Message {
       createdByWebhookId,
       isPrivate,
       isSilent,
-      replyMessageIds,
+      replyMessageIds
     } = message;
-    Object.defineProperty(this, "_client", {
+    Object.defineProperty(this, '_client', {
       enumerable: false,
       writable: false,
-      value: client,
+      value: client
     });
 
-    Object.defineProperty(this, "apiMessage", {
+    Object.defineProperty(this, 'apiMessage', {
       enumerable: false,
       writable: true,
-      value: message,
+      value: message
     });
     this.id = id;
     this.content = message.content;
     this.private = isPrivate;
     this.silent = isSilent;
     this.webhook =
-      createdByWebhookId != "" ? { id: createdByWebhookId } : false;
+      createdByWebhookId != '' ? { id: createdByWebhookId } : false;
     this.createdAt = new Date(createdAt);
     this.mentions = new Mentions(mentions);
 
@@ -124,12 +125,12 @@ export class Message {
   reply(text: string | messageSend, options: messageSend) {
     const link = Routes.messages(this.channel.id);
 
-    if (typeof text != "string") {
+    if (typeof text != 'string') {
       text.replyIds = [this.apiMessage.id];
     }
 
     const data =
-      typeof text == "string"
+      typeof text == 'string'
         ? {
             content: text,
             isPrivate: options?.private || false,
@@ -137,7 +138,7 @@ export class Message {
             embeds: options?.embeds,
             replyMessageIds: options?.replyIds
               ? [this.apiMessage.id, ...options?.replyIds]
-              : [this.apiMessage.id],
+              : [this.apiMessage.id]
           }
         : {
             content: text.content,
@@ -146,13 +147,13 @@ export class Message {
             embeds: text.embeds,
             replyMessageIds: text?.replyIds
               ? [this.apiMessage.id, ...text.replyIds]
-              : [this.apiMessage.id],
+              : [this.apiMessage.id]
           };
 
     return new Promise(async (resolve, reject) => {
       try {
         const { message } = await this.client.rest.post(link, {
-          body: JSON.stringify(data),
+          body: JSON.stringify(data)
         });
 
         const m = new Message(
@@ -163,7 +164,7 @@ export class Message {
             member: await this.server.members.fetch(
               message.createdBy,
               message.serverId
-            ),
+            )
           },
           this.client
         );
@@ -177,7 +178,7 @@ export class Message {
 
   edit(text: string | messageSend, options: messageSend) {
     const data =
-      typeof text == "string"
+      typeof text == 'string'
         ? {
             content: text,
             isPrivate: options?.private || false,
@@ -185,7 +186,7 @@ export class Message {
             embeds: options?.embeds,
             replyMessageIds: options?.replyIds
               ? [this.apiMessage.id, ...options?.replyIds]
-              : [this.apiMessage.id],
+              : [this.apiMessage.id]
           }
         : {
             content: text.content,
@@ -194,12 +195,12 @@ export class Message {
             embeds: text.embeds,
             replyMessageIds: text?.replyIds
               ? [this.apiMessage.id, ...text.replyIds]
-              : [this.apiMessage.id],
+              : [this.apiMessage.id]
           };
 
     const msgUrl = Routes.message(this.channel.id, this.id);
 
-    if (typeof text != "string") {
+    if (typeof text != 'string') {
       text.replyIds = [this.apiMessage.id];
     }
 
@@ -208,7 +209,7 @@ export class Message {
         const { message }: { message: APIMessage } = await this.client.rest.put(
           msgUrl,
           {
-            body: JSON.stringify(data),
+            body: JSON.stringify(data)
           }
         );
 
@@ -217,7 +218,7 @@ export class Message {
           {
             server: this.server,
             channel: this.channel,
-            member: this.member,
+            member: this.member
           },
           this.client
         );
@@ -228,8 +229,19 @@ export class Message {
       }
     });
   }
-}
 
+  createReactionCollector(options?: collectorOptions<MessageReaction>) {
+    return new MessageReactionCollector(this, options);
+  }
+
+  awaitReactions(options?: collectorOptions<MessageReaction>) {
+    return new Promise((resolve) => {
+      this.createReactionCollector(options).once('end', (item) =>
+        resolve(item)
+      );
+    });
+  }
+}
 
 export class MessageReaction extends String {
   message: Message;
@@ -237,29 +249,35 @@ export class MessageReaction extends String {
   createdBy: string;
   messageId: string;
   emote: Emote;
-  channelId: string
+  channelId: string;
+  id: number;
 
-  constructor(reaction: APIMessageReaction, obj: { message: Message, member: Member }, client: Client) {
+  constructor(
+    reaction: APIMessageReaction,
+    obj: { message: Message; member: Member },
+    client: Client
+  ) {
     super();
-    this.message = obj.message
-    this.reactedBy = obj.member
-    this.createdBy = reaction.createdBy
-    this.messageId = reaction.messageId
-    this.emote = new Emote(reaction.emote)
-    this.channelId = reaction.channelId
+    this.message = obj.message;
+    this.reactedBy = obj.member;
+    this.createdBy = reaction.createdBy;
+    this.messageId = reaction.messageId;
+    this.emote = new Emote(reaction.emote);
+    this.id = this.emote.id;
+    this.channelId = reaction.channelId;
   }
 
   remove() {
-    const link = Routes.reaction(this.channelId, this.messageId, this.emote.id)
+    const link = Routes.reaction(this.channelId, this.messageId, this.emote.id);
 
     return new Promise(async (resolve, reject) => {
       try {
-        await this.message.client.rest.delete(link)
+        await this.message.client.rest.delete(link);
 
-        resolve(true)
+        resolve(true);
       } catch (err) {
-        throw new GuildedApiError(err)
+        throw new GuildedApiError(err);
       }
-    })
+    });
   }
 }
