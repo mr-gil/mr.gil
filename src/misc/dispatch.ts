@@ -1,13 +1,12 @@
-import { Client } from "../Client";
+import { Client } from '../Client';
 
 import {
   ChannelCollection,
-  MemberCollection,
   ServerCollection,
-  UserCollection,
-} from "../components/Collection";
+  UserCollection
+} from '../components/Collection';
 
-import eventHandler from "../events";
+import eventHandler from '../events';
 
 /**
  * Emitting events based on the API Event type `(NOT INTENDED FOR END-USER)`
@@ -18,20 +17,19 @@ import eventHandler from "../events";
  */
 export async function dispatch(type: string, data: any, client: Client) {
   if (!type) {
-    client.users = new UserCollection([], { type: "users", client: client });
+    client.users = new UserCollection([], { type: 'users', client: client });
     client.servers = new ServerCollection([], {
-      type: "servers",
-      client: client,
+      type: 'servers',
+      client: client
     });
 
     client.channels = new ChannelCollection([], {
-      type: "channels",
-      client: client,
+      type: 'channels',
+      client: client
     });
 
     client.user = await client.users.fetch({}, data?.user);
 
-    client.emit("ready", client);
-  } else
-    eventHandler(type, data, client);
+    client.emit('ready', client);
+  } else eventHandler(type, data, client);
 }

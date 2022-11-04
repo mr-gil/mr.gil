@@ -12,6 +12,7 @@ import { MessageCollector } from '../collectors/MessageCollector';
 import { GuildedApiError } from '../errors/apiError';
 import { DocManager } from '../manager/DocManager';
 import { MessageManager } from '../manager/MessageManager';
+import { WebhookManager } from '../manager/WebhookManager';
 import { Collection } from './Collection';
 import { Doc } from './Doc';
 import { Message } from './Message';
@@ -43,11 +44,11 @@ export class BaseChannel {
   archivedBy: string;
   archivedAt: Date;
   private _client: Client;
-  server: BaseServer;
+  webhooks: WebhookManager;
 
   constructor(
     channel: APIChannel,
-    obj: { server: BaseServer },
+    private obj: { server: BaseServer },
     client: Client
   ) {
     Object.defineProperty(this, '_client', {
@@ -64,13 +65,17 @@ export class BaseChannel {
     this.createdBy = channel.createdBy;
     this.updatedAt = new Date(channel.updatedAt);
     this.serverId = channel.serverId;
-    this.server = obj.server;
     this.parent = channel.parentId;
     this.category = channel.categoryId;
     this.groupId = channel.groupId;
     this.public = channel.isPublic;
     this.archivedBy = channel.archivedBy;
     this.archivedAt = new Date(channel.archivedAt);
+    this.webhooks = new WebhookManager(this);
+  }
+
+  get server() {
+    return this.obj.server;
   }
 
   get client() {

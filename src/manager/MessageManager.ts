@@ -43,13 +43,12 @@ export class MessageManager extends BaseManager {
           Routes.message(this.channel.id, msgId)
         );
 
-        const server = await this.client.servers.fetch(message.serverId);
         const msg = new Message(
           message,
           {
-            server: server,
+            server: this.channel.server,
             channel: await this.client.channels.fetch(message.channelId),
-            member: await server.members.fetch(
+            member: await this.channel.server.members.fetch(
               message.createdBy,
               message.serverId
             )
@@ -74,13 +73,15 @@ export class MessageManager extends BaseManager {
           if (cac) {
             ms.set(cac.id, cac);
           } else {
-            const server = await this.client.servers.fetch(m.serverId);
             const msg = new Message(
               m,
               {
-                server: server,
+                server: this.channel.server,
                 channel: await this.client.channels.fetch(m.channelId),
-                member: await server.members.fetch(m.createdBy, m.serverId)
+                member: await this.channel.server.members.fetch(
+                  m.createdBy,
+                  m.serverId
+                )
               },
               this.client
             );

@@ -11,50 +11,10 @@ import { collectorOptions } from '../collectors/BaseCollector';
 import { MessageReactionCollector } from '../collectors/MessageReactionCollector';
 import { GuildedApiError } from '../errors/apiError';
 
-type messageSend = {
-  content?: string;
-  embeds?: MessageEmbed[];
-  replyIds?: string[];
-  private?: boolean;
-  silent?: boolean;
-};
-
-type mentionObj = {
-  id: string | number;
-};
-
-type mentionTypes = {
-  users?: mentionObj[];
-  roles?: mentionObj[];
-  channels?: mentionObj[];
-  everyone?: boolean;
-  here?: boolean;
-};
-
-export class Mentions {
-  users: mentionObj[];
-  roles: mentionObj[];
-  everyone: boolean;
-  here: boolean;
-  constructor(d: APIMentions) {
-    if (d == undefined) return undefined;
-    else {
-      this.users = d.users;
-      this.roles = d.roles;
-      this.everyone = d.everyone;
-      this.here = d.here;
-    }
-  }
-}
-
 export class Message {
   content: string;
   createdAt: Date;
   mentions: mentionTypes;
-  member: Member | User;
-  channel: ChatChannel;
-  server: BaseServer;
-  author: User;
   private _client: Client;
   replies: string[];
   private apiMessage: APIMessage;
@@ -66,7 +26,11 @@ export class Message {
 
   constructor(
     message: APIMessage,
-    obj: { server: BaseServer; channel: ChatChannel; member: Member | User },
+    private obj: {
+      server: BaseServer;
+      channel: ChatChannel;
+      member: Member | User;
+    },
     client: Client,
     cache = client.cacheMessage ?? true
   ) {
@@ -99,13 +63,21 @@ export class Message {
     this.createdAt = new Date(createdAt);
     this.mentions = new Mentions(mentions);
 
-    this.server = obj.server;
-    this.channel = obj.channel;
-    this.member = obj.member;
-
     this.replies = replyMessageIds;
 
     if (cache) this.channel.messages.cache.set(this.id, this);
+  }
+
+  get server() {
+    return this.obj.server;
+  }
+
+  get member() {
+    return this.obj.member;
+  }
+
+  get channel() {
+    return this.obj.channel;
   }
 
   get channelUrl() {
@@ -254,8 +226,7 @@ export class MessageReaction extends String {
 
   constructor(
     reaction: APIMessageReaction,
-    obj: { message: Message; member: Member },
-    client: Client
+    obj: { message: Message; member: Member }
   ) {
     super();
     this.message = obj.message;
@@ -276,8 +247,45 @@ export class MessageReaction extends String {
 
         resolve(true);
       } catch (err) {
+        resolve(false);
         throw new GuildedApiError(err);
       }
     });
   }
 }
+
+export class Mentions {
+  users: mentionObj[];
+  roles: mentionObj[];
+  everyone: boolean;
+  here: boolean;
+  constructor(d: APIMentions) {
+    if (d == undefined) return undefined;
+    else {
+      this.users = d.users;
+      this.roles = d.roles;
+      this.everyone = d.everyone;
+      this.here = d.here;
+    }
+  }
+}
+
+export type messageSend = {
+  content?: string;
+  embeds?: MessageEmbed[];
+  replyIds?: string[];
+  private?: boolean;
+  silent?: boolean;
+};
+
+type mentionObj = {
+  id: string | number;
+};
+
+type mentionTypes = {
+  users?: mentionObj[];
+  roles?: mentionObj[];
+  channels?: mentionObj[];
+  everyone?: boolean;
+  here?: boolean;
+};

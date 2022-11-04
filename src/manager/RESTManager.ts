@@ -1,10 +1,10 @@
-import { APIError } from "guilded-api-typings";
-import EventEmitter from "events";
-import { GuildedApiError } from "../errors/apiError";
-import { request } from "https";
-import { Client } from "../Client";
+import { APIError } from 'guilded-api-typings';
+import EventEmitter from 'events';
+import { GuildedApiError } from '../errors/apiError';
+import { request } from 'https';
+import { Client } from '../Client';
 
-const version = "0.0.1";
+const version = '0.0.1';
 const userAgent = `Mr.Gil (guilded, ${version})`;
 
 export class RESTManager extends EventEmitter {
@@ -56,26 +56,26 @@ export class RESTManager extends EventEmitter {
           searchParams.append(key, value.toString());
       const req = request(
         {
-          hostname: `www.guilded.gg`,
-          path: `/api/v${this.version}` + path + searchParams,
+          hostname: options?.host || `www.guilded.gg`,
+          path: options.uri || `/api/v${this.version}` + path + searchParams,
           method,
           headers: {
-            "Content-Type": "application/json",
-            "User-Agent": userAgent,
-            Authorization: `Bearer ${this.token}`,
-          },
+            'Content-Type': 'application/json',
+            'User-Agent': userAgent,
+            Authorization: `Bearer ${this.token}`
+          }
         },
         async (response) => {
-          var body = "";
-          response.on("error", (error: APIError) => {
+          var body = '';
+          response.on('error', (error: APIError) => {
             throw new GuildedApiError(error);
           });
 
-          response.on("data", (chunk) => {
+          response.on('data', (chunk) => {
             body = body + chunk;
 
             if (response.complete) {
-              this.emit("raw", body, response);
+              this.emit('raw', body, response);
               return body;
             }
           });
@@ -85,7 +85,7 @@ export class RESTManager extends EventEmitter {
             retries <= (this.options?.maxRetries ?? 3)
           ) {
             const retryAfter =
-              Number(response.headers["retry-after"]) ??
+              Number(response.headers['retry-after']) ??
               this.options.retryInterval ??
               30000 / 1000;
             await new Promise((resolve) =>
@@ -94,7 +94,7 @@ export class RESTManager extends EventEmitter {
             return this.https(path, method, options, retries++);
           }
 
-          response.on("end", () => {
+          response.on('end', () => {
             try {
               resolve(JSON.parse(body));
             } catch (e: any) {
@@ -104,7 +104,7 @@ export class RESTManager extends EventEmitter {
         }
       );
 
-      req.on("error", (err) => {
+      req.on('error', (err) => {
         throw new GuildedApiError(err);
       });
       if (options?.body) req.write(options.body);
@@ -117,23 +117,23 @@ export class RESTManager extends EventEmitter {
     path: string,
     params?: P
   ) {
-    return this.https<R, any, P>(path, "GET", { params });
+    return this.https<R, any, P>(path, 'GET', { params });
   }
 
   post<R = any, B = any>(path: string, body?: B) {
-    return this.https<R, B>(path, "POST", body);
+    return this.https<R, B>(path, 'POST', body);
   }
 
   patch<R = any, B = any>(path: string, body?: B) {
-    return this.https<R, B>(path, "PATCH", body);
+    return this.https<R, B>(path, 'PATCH', body);
   }
 
   put<R = any, B = any>(path: string, body?: B) {
-    return this.https<R, B>(path, "PUT", body);
+    return this.https<R, B>(path, 'PUT', body);
   }
 
   delete<R>(path: string) {
-    return this.https<R>(path, "DELETE");
+    return this.https<R>(path, 'DELETE');
   }
 }
 
@@ -150,6 +150,8 @@ export interface FetchOptions<
   B = any,
   P extends Record<string, any> = Record<string, any>
 > {
+  uri?: string;
+  host?: string;
   port?: any;
   params?: P;
   body?: B;

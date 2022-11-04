@@ -1,16 +1,9 @@
-import {
-  APIEmote,
-  APIServer,
-  APIServerBan,
-  APIServerMember,
-  Routes,
-} from "guilded-api-typings";
-import { BaseChannel } from "./Channel";
-import { Client } from "../Client";
-import { Collection, MemberCollection } from "./Collection";
-import { MemberBan } from "./MemberBan";
-import { User } from "./User";
-import { GuildedApiError } from "../errors/apiError";
+import { APIEmote, APIServer, APIServerBan, Routes } from 'guilded-api-typings';
+import { Client } from '../Client';
+import { Collection, MemberCollection } from './Collection';
+import { MemberBan } from './MemberBan';
+import { User } from './User';
+import { GuildedApiError } from '../errors/apiError';
 
 export class Emote {
   name: string;
@@ -47,14 +40,14 @@ export class BaseServer {
   members: MemberCollection;
   url: string;
   type:
-    | "team"
-    | "organization"
-    | "community"
-    | "clan"
-    | "guild"
-    | "friends"
-    | "streaming"
-    | "other";
+    | 'team'
+    | 'organization'
+    | 'community'
+    | 'clan'
+    | 'guild'
+    | 'friends'
+    | 'streaming'
+    | 'other';
   verified: boolean;
   bans: Bans;
 
@@ -72,21 +65,20 @@ export class BaseServer {
     this.url = server.url;
     this.type = server.type;
 
-    Object.defineProperty(this, "members", {
+    Object.defineProperty(this, 'members', {
       enumerable: false,
       writable: false,
       value: new MemberCollection([], {
-        type: "members",
-        client: client,
-      }),
+        type: 'members',
+        client: client
+      })
     });
 
-    Object.defineProperty(this, "bans", {
+    Object.defineProperty(this, 'bans', {
       enumerable: false,
       writable: false,
       value: new Bans(this, client)
     });
-
   }
 }
 
@@ -96,10 +88,10 @@ class Bans {
 
   constructor(server: BaseServer, client: Client) {
     this.serverId = server.id;
-    Object.defineProperty(this, "client", {
+    Object.defineProperty(this, 'client', {
       enumerable: false,
       writable: false,
-      value: client,
+      value: client
     });
   }
 
@@ -131,7 +123,7 @@ class Bans {
           user:
             user instanceof User
               ? user
-              : await this.client.users.fetch({}, ban.user),
+              : await this.client.users.fetch({}, ban.user)
         });
 
         resolve(serverBan);
@@ -146,7 +138,7 @@ class Bans {
     return new Promise(async (resolve, reject) => {
       try {
         const ban = await this.client.rest.post(link, {
-          body: JSON.stringify({ reason: reason || "No Reason" }),
+          body: JSON.stringify({ reason: reason || 'No Reason' })
         });
 
         const serverBan = new MemberBan(ban, { user: user });
@@ -167,9 +159,10 @@ class Bans {
         resolve({
           user: user,
           unban: true,
-          reason: reason,
+          reason: reason
         });
       } catch (err: any) {
+        resolve(false);
         throw new GuildedApiError(err);
       }
     });

@@ -1,15 +1,14 @@
-import { rejects } from "assert";
 import {
-  APIServer,
   APIServerMember,
   APIUser,
   APIUserSummary,
-  Routes,
-} from "guilded-api-typings";
-import { Client } from "../Client";
-import { GuildedApiError } from "../errors/apiError";
-import { MemberBan } from "./MemberBan";
-import { BaseServer } from "./Server";
+  Routes
+} from 'guilded-api-typings';
+import { resolve } from 'path';
+import { Client } from '../Client';
+import { GuildedApiError } from '../errors/apiError';
+import { MemberBan } from './MemberBan';
+import { BaseServer } from './Server';
 
 export class User extends String {
   name: string;
@@ -23,10 +22,10 @@ export class User extends String {
     super(user.name);
     this.name = user.name;
     this.id = user.id; // @ts-ignore
-    this.bot = user.botId ? true : user.type == "bot";
+    this.bot = user.botId ? true : user.type == 'bot';
     this.avatar = user.avatar;
-    this.banner = "banner" in user ? user.banner : undefined;
-    this.createdAt = "createdAt" in user ? new Date(user.createdAt) : undefined;
+    this.banner = 'banner' in user ? user.banner : undefined;
+    this.createdAt = 'createdAt' in user ? new Date(user.createdAt) : undefined;
   }
 
   get mention() {
@@ -49,12 +48,11 @@ export class Member extends String {
   isOwner: boolean;
   joinedAt: Date;
   user: User;
-  server: BaseServer;
   private _client: Client;
 
   constructor(
     member: APIServerMember,
-    obj: { server: BaseServer; user: User }
+    private obj: { server: BaseServer; user: User }
   ) {
     super();
 
@@ -64,9 +62,12 @@ export class Member extends String {
     this.roles = member.roleIds;
     this.isOwner = member.isOwner;
     this.joinedAt = new Date(member.joinedAt);
-    this.server = obj.server;
 
     this.nickname = new Nickname(member.nickname, this);
+  }
+
+  get server() {
+    return this.obj.server;
   }
 
   toString() {
@@ -76,13 +77,20 @@ export class Member extends String {
   kick(reason: string) {
     const link = Routes.serverMember(this.server.id, this.id);
 
-    this._client.rest.delete(link);
+    return new Promise(async (resolve) => {
+      try {
+        await this._client.rest.delete(link);
 
-    return {
-      user: this.user,
-      kick: true,
-      reason: reason || "No Reason",
-    };
+        resolve({
+          user: this.user,
+          kick: true,
+          reason: reason || 'No Reason'
+        });
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
   }
 
   ban(reason: string): Promise<MemberBan> {
@@ -90,7 +98,7 @@ export class Member extends String {
     return new Promise(async (resolve, reject) => {
       try {
         const ban = await this._client.rest.post(link, {
-          body: JSON.stringify({ reason: reason || "No Reason" }),
+          body: JSON.stringify({ reason: reason || 'No Reason' })
         });
 
         const serverBan = new MemberBan(ban, { user: this.user });
@@ -111,10 +119,10 @@ class Nickname extends String {
     super(string);
     this.name = string;
 
-    Object.defineProperty(this, "member", {
+    Object.defineProperty(this, 'member', {
       enumerable: false,
       writable: false,
-      value: member,
+      value: member
     });
   }
 
@@ -122,7 +130,7 @@ class Nickname extends String {
     const link = Routes.serverNickname(this.member.server.id, this.member.id);
 
     let response: { nickname: string } = await client.rest.put(link, {
-      body: JSON.stringify({ nickname: name }),
+      body: JSON.stringify({ nickname: name })
     });
 
     return response;
@@ -131,8 +139,15 @@ class Nickname extends String {
   reset(client: Client) {
     const link = Routes.serverNickname(this.member.server.id, this.member.id);
 
-    client.rest.delete(link);
+    return new Promise(async (resolve) => {
+      try {
+        await client.rest.delete(link);
 
-    return true;
+        resolve(true);
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
   }
 }
