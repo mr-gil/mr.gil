@@ -3,7 +3,6 @@ import { Client } from '../Client';
 import { GuildedApiError } from '../errors/apiError';
 import { DocChannel } from './Channel';
 import { Mentions } from './Message';
-import { BaseServer } from './Server';
 import { Member } from './User';
 
 export class Doc {
@@ -22,18 +21,12 @@ export class Doc {
 
   constructor(
     doc: APIDoc,
-    private obj: { server: BaseServer; channel: DocChannel; member: Member },
-    client: Client,
-    cache = client.cacheDocs ?? true
+    private obj: { channel: DocChannel; member: Member },
+    cache = obj.channel.client.cacheDocs ?? true
   ) {
     this.id = doc.id;
     this.channelId = doc.channelId;
     this.serverId = doc.serverId;
-    Object.defineProperty(this, '_client', {
-      enumerable: false,
-      writable: false,
-      value: client
-    });
 
     this.title = doc.title;
     this.createdAt = new Date(doc.createdAt);
@@ -50,7 +43,7 @@ export class Doc {
   }
 
   get server() {
-    return this.obj.server;
+    return this.obj.channel.server;
   }
 
   get channel() {
@@ -61,15 +54,28 @@ export class Doc {
     return this._client;
   }
 
-  async author() {
-    const member = await this.server.members.get(this.createdBy);
-    return member;
+  get author() {
+    return this.obj.member;
   }
 
   toString() {
     return this.content;
   }
 
+  delete() {
+    const link = Routes.doc(this.channelId, this.id);
+
+    return new Promise(async (resolve) => {
+      try {
+        await this.client.rest.delete(link);
+
+        resolve(true);
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
+  }
   edit(title: string, content: string) {
     const docUrl = Routes.doc(this.channelId, this.id);
 
@@ -79,15 +85,10 @@ export class Doc {
           body: JSON.stringify({ title, content })
         });
 
-        const d = new Doc(
-          doc,
-          {
-            server: this.server,
-            channel: this.channel,
-            member: await this.author()
-          },
-          this.client
-        );
+        const d = new Doc(doc, {
+          channel: this.channel,
+          member: this.author
+        });
 
         resolve(d);
       } catch (err: any) {

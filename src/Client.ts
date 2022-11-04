@@ -38,17 +38,18 @@ type clientOptions = {
 
 export class Client extends EventEmitter {
   cacheDocs?: boolean;
+  cacheForumTopics: boolean;
   cacheMessage: boolean;
   cacheSize: number;
   channels: ChannelCollection;
   gateway: number;
+  private token: string;
   proxyUrl: string;
-  readyTimestamp: number;
   readonly rest: RESTManager;
+  readyTimestamp: number;
   resumeTimes: number;
   servers: ServerCollection;
   shards: any[];
-  private token: string;
   user: User;
   users: UserCollection;
 

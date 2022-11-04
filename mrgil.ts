@@ -1,2 +1,2 @@
 export { Client } from './src/Client';
-export { MessageEmbed, DocBuilder } from './src/builder';
+export { MessageEmbed, DocBuilder, ForumBuilder } from './src/builder';

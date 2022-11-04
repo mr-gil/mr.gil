@@ -43,18 +43,13 @@ export class MessageManager extends BaseManager {
           Routes.message(this.channel.id, msgId)
         );
 
-        const msg = new Message(
-          message,
-          {
-            server: this.channel.server,
-            channel: await this.client.channels.fetch(message.channelId),
-            member: await this.channel.server.members.fetch(
-              message.createdBy,
-              message.serverId
-            )
-          },
-          this.client
-        );
+        const msg = new Message(message, {
+          channel: this.channel,
+          member: await this.channel.server.members.fetch(
+            message.createdBy,
+            message.serverId
+          )
+        });
         this.cache.set(msg.id, msg);
         resolve(msg);
       } else {
@@ -73,18 +68,13 @@ export class MessageManager extends BaseManager {
           if (cac) {
             ms.set(cac.id, cac);
           } else {
-            const msg = new Message(
-              m,
-              {
-                server: this.channel.server,
-                channel: await this.client.channels.fetch(m.channelId),
-                member: await this.channel.server.members.fetch(
-                  m.createdBy,
-                  m.serverId
-                )
-              },
-              this.client
-            );
+            const msg = new Message(m, {
+              channel: this.channel,
+              member: await this.channel.server.members.fetch(
+                m.createdBy,
+                m.serverId
+              )
+            });
 
             ms.set(msg.id, msg);
           }

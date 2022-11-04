@@ -1,20 +1,23 @@
 import {
   APIChannel,
   APIDoc,
+  APIForumTopic,
   APIMessage,
   ChannelType,
   Routes
 } from 'guilded-api-typings';
-import { MessageEmbed, DocBuilder } from '../builder';
+import { MessageEmbed, DocBuilder, ForumBuilder } from '../builder';
 import { Client } from '../Client';
 import { collectorOptions } from '../collectors/BaseCollector';
 import { MessageCollector } from '../collectors/MessageCollector';
 import { GuildedApiError } from '../errors/apiError';
 import { DocManager } from '../manager/DocManager';
+import { ForumTopicManager } from '../manager/ForumTopicManager';
 import { MessageManager } from '../manager/MessageManager';
 import { WebhookManager } from '../manager/WebhookManager';
 import { Collection } from './Collection';
 import { Doc } from './Doc';
+import { ForumTopic } from './ForumTopic';
 import { Message } from './Message';
 import { BaseServer } from './Server';
 
@@ -32,7 +35,7 @@ type webhook = {
   token: string;
 };
 
-export type AnyChannel = BaseChannel & ChatChannel & DocChannel;
+export type AnyChannel = BaseChannel & ChatChannel & DocChannel & ForumChannel;
 
 export class BaseChannel {
   archivedAt: Date;
@@ -126,18 +129,10 @@ export class ChatChannel extends BaseChannel {
         const msgs = new Collection([], { client: this.client });
 
         messages.forEach(async (m) => {
-          const msg = new Message(
-            m,
-            {
-              server: this.server,
-              channel: this,
-              member: await this.server.members.fetch(
-                m.createdBy,
-                this.server.id
-              )
-            },
-            this.client
-          );
+          const msg = new Message(m, {
+            channel: this,
+            member: await this.server.members.fetch(m.createdBy, this.server.id)
+          });
 
           msgs.set(msg.id, msg);
         });
@@ -208,15 +203,10 @@ export class ChatChannel extends BaseChannel {
               body: JSON.stringify(data)
             });
           resolve(
-            new Message(
-              message,
-              {
-                server: this.server,
-                channel: this,
-                member: await this.webhooks.fetch(message.createdByWebhookId)
-              },
-              this.client
-            )
+            new Message(message, {
+              channel: this,
+              member: await this.webhooks.fetch(message.createdByWebhookId)
+            })
           );
         } else {
           const { message }: { message: APIMessage } =
@@ -224,18 +214,13 @@ export class ChatChannel extends BaseChannel {
               body: JSON.stringify(data)
             });
           resolve(
-            new Message(
-              message,
-              {
-                server: this.server,
-                channel: this,
-                member: await this.server.members.fetch(
-                  message.createdBy,
-                  message.serverId
-                )
-              },
-              this.client
-            )
+            new Message(message, {
+              channel: this,
+              member: await this.server.members.fetch(
+                message.createdBy,
+                message.serverId
+              )
+            })
           );
         }
       } catch (err: any) {
@@ -286,18 +271,10 @@ export class DocChannel extends BaseChannel {
         const dcs = new Collection([], { client: this.client });
 
         docs.forEach(async (d) => {
-          const doc = new Doc(
-            d,
-            {
-              server: this.server,
-              channel: this,
-              member: await this.server.members.fetch(
-                d.createdBy,
-                this.server.id
-              )
-            },
-            this.client
-          );
+          const doc = new Doc(d, {
+            channel: this,
+            member: await this.server.members.fetch(d.createdBy, this.server.id)
+          });
 
           dcs.set(doc.id, doc);
         });
@@ -309,38 +286,78 @@ export class DocChannel extends BaseChannel {
     });
   }
 
-  post(title: string | DocBuilder, content: string) {
+  post(title: string | DocBuilder, content?: string) {
     const link = Routes.docs(this.id);
 
     return new Promise(async (resolve, reject) => {
       try {
-        let data: DocBuilder | { title: string; content: string };
+        let data: DocBuilder;
 
         if (title instanceof DocBuilder) {
           data = title;
         } else
-          data = {
+          data = new DocBuilder({
             title: title as string,
             content
-          };
+          });
 
         const { doc }: { doc: APIDoc } = await this.client.rest.post(link, {
           body: JSON.stringify(data)
         });
 
         resolve(
-          new Doc(
-            doc,
-            {
-              server: this.server,
-              channel: this,
-              member: await this.server.members.fetch(
-                doc.createdBy,
-                doc.serverId
-              )
-            },
-            this.client
-          )
+          new Doc(doc, {
+            channel: this,
+            member: await this.server.members.fetch(doc.createdBy, doc.serverId)
+          })
+        );
+      } catch (err: any) {
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+}
+
+export class ForumChannel extends BaseChannel {
+  forums: ForumTopicManager;
+
+  constructor(
+    channel: APIChannel,
+    obj: { server: BaseServer },
+    client: Client
+  ) {
+    super(channel, obj, client);
+    this.forums = new ForumTopicManager(this);
+  }
+
+  post(title: string | ForumBuilder, content?: string) {
+    const link = Routes.forumTopics(this.id);
+
+    return new Promise(async (resolve, reject) => {
+      try {
+        let data: ForumBuilder;
+
+        if (title instanceof ForumBuilder) {
+          data = title;
+        } else
+          new ForumBuilder({
+            title: title as string,
+            content
+          });
+
+        const { forumTopic }: { forumTopic: APIForumTopic } =
+          await this.client.rest.post(link, {
+            body: JSON.stringify(data)
+          });
+
+        resolve(
+          new ForumTopic(forumTopic, {
+            channel: this,
+            member: await this.server.members.fetch(
+              forumTopic.createdBy,
+              forumTopic.serverId
+            )
+          })
         );
       } catch (err: any) {
         throw new GuildedApiError(err);

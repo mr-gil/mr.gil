@@ -21,7 +21,7 @@ export class Webhook {
     this.createdBy = web.createdBy;
     this.createdAt = new Date(web.createdAt);
     this.deletedAt = new Date(web.deletedAt);
-    this.token = web.token;
+    if (web.token) this.token = web.token;
     this.id = web.id;
 
     this.channel.webhooks.cache.set(this.name, this);
@@ -78,15 +78,10 @@ export class Webhook {
             body: JSON.stringify(data)
           });
 
-        const m = new Message(
-          message,
-          {
-            server: this.server,
-            channel: this.channel as ChatChannel,
-            member: this
-          },
-          this.channel.client
-        );
+        const m = new Message(message, {
+          channel: this.channel as ChatChannel,
+          member: this
+        });
 
         resolve(m);
       } catch (err) {

@@ -1,9 +1,9 @@
-export class DocBuilder {
+export class ForumBuilder {
   content: string;
   title?: string;
 
-  constructor(data: docBuilderOptions) {
-    this.title = data.title || 'New Document';
+  constructor(data: forumBuilderOptions) {
+    this.title = data.title || 'New Topic';
     this.content = data.content;
   }
 
@@ -18,7 +18,7 @@ export class DocBuilder {
   }
 }
 
-export type docBuilderOptions = {
+export type forumBuilderOptions = {
   title?: string;
   content?: string;
 };

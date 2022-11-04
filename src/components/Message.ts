@@ -27,12 +27,10 @@ export class Message {
   constructor(
     message: APIMessage,
     private obj: {
-      server: BaseServer;
       channel: ChatChannel;
-      member?: Member | User | Webhook;
+      member?: Member | Webhook;
     },
-    client: Client,
-    cache = client.cacheMessage ?? true
+    cache = obj.channel.client.cacheMessage ?? true
   ) {
     const {
       createdAt,
@@ -46,7 +44,7 @@ export class Message {
     Object.defineProperty(this, '_client', {
       enumerable: false,
       writable: false,
-      value: client
+      value: this.channel.client
     });
 
     Object.defineProperty(this, 'apiMessage', {
@@ -58,7 +56,7 @@ export class Message {
     this.content = message.content;
     this.private = isPrivate;
     this.silent = isSilent;
-    this.webhook = createdByWebhookId != '' ? (this.member as Webhook) : false;
+    this.webhook = createdByWebhookId != '' ? (obj.member as Webhook) : false;
     this.createdAt = new Date(createdAt);
     this.mentions = new Mentions(mentions);
 
@@ -68,7 +66,7 @@ export class Message {
   }
 
   get server() {
-    return this.obj.server;
+    return this.channel.server;
   }
 
   get member() {
@@ -127,18 +125,13 @@ export class Message {
           body: JSON.stringify(data)
         });
 
-        const m = new Message(
-          message,
-          {
-            server: this.server,
-            channel: this.channel,
-            member: await this.server.members.fetch(
-              message.createdBy,
-              message.serverId
-            )
-          },
-          this.client
-        );
+        const m = new Message(message, {
+          channel: this.channel,
+          member: await this.server.members.fetch(
+            message.createdBy,
+            message.serverId
+          )
+        });
 
         resolve(m);
       } catch (err: any) {
@@ -184,15 +177,10 @@ export class Message {
           }
         );
 
-        const msg = new Message(
-          message,
-          {
-            server: this.server,
-            channel: this.channel,
-            member: this.member
-          },
-          this.client
-        );
+        const msg = new Message(message, {
+          channel: this.channel,
+          member: this.member
+        });
 
         resolve(msg);
       } catch (err: any) {

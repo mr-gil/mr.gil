@@ -1,5 +1,4 @@
 import {
-  APIEmbed,
   APIEmbedAuthor,
   APIEmbedField,
   APIEmbedFooter,
@@ -11,7 +10,7 @@ export class MessageEmbed {
   author?: APIEmbedAuthor;
   color?: ColorResolvable;
   description?: string;
-  fields: APIEmbedField[];
+  fields?: APIEmbedField[];
   footer?: APIEmbedFooter;
   image?: APIEmbedMedia;
   thumbnail?: APIEmbedMedia;
@@ -19,7 +18,7 @@ export class MessageEmbed {
   title?: string;
   url?: string;
 
-  constructor(data: APIEmbed = {}) {
+  constructor(data: embedBuilderOptions) {
     this.title = data.title;
     this.description = data.description;
     this.url = data.url;
@@ -87,3 +86,16 @@ export class MessageEmbed {
     return this;
   }
 }
+
+export type embedBuilderOptions = {
+  author?: APIEmbedAuthor;
+  color?: ColorResolvable;
+  description?: string;
+  fields?: APIEmbedField[];
+  footer?: APIEmbedFooter;
+  image?: APIEmbedMedia;
+  thumbnail?: APIEmbedMedia;
+  timestamp?: Date;
+  title?: string;
+  url?: string;
+};

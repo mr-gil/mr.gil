@@ -39,24 +39,18 @@ export class DocManager extends BaseManager {
           Routes.doc(this.channel.id, docOrOptions)
         );
 
-        const server = await this.client.servers.fetch(doc.serverId);
-        const docComp = new Doc(
-          doc,
-          {
-            server: server,
-            channel: (await this.client.channels.fetch(
-              doc.channelId
-            )) as DocChannel,
-            member: await server.members.fetch(doc.createdBy, doc.serverId)
-          },
-          this.client
-        );
+        const docComp = new Doc(doc, {
+          channel: this.channel,
+          member: await this.channel.server.members.fetch(
+            doc.createdBy,
+            doc.serverId
+          )
+        });
         this.cache.set(docOrOptions, docComp);
         resolve(docComp);
       } else {
         const { docs }: { docs: APIDoc[] } = await this.client.rest.get(
-          Routes.docs(this.channel.id),
-          docOrOptions
+          Routes.docs(this.channel.id)
         );
 
         const col: Collection<number, Doc> = new Collection([], {
@@ -68,16 +62,13 @@ export class DocManager extends BaseManager {
           if (cac) {
             col.set(cac.id, cac);
           } else {
-            const server = await this.client.servers.fetch(d.serverId);
-            const dc = new Doc(
-              d,
-              {
-                server: server,
-                channel: await this.client.channels.fetch(d.channelId),
-                member: await server.members.fetch(d.createdBy, d.serverId)
-              },
-              this.client
-            );
+            const dc = new Doc(d, {
+              channel: this.channel,
+              member: await this.channel.server.members.fetch(
+                d.createdBy,
+                d.serverId
+              )
+            });
 
             col.set(dc.id, dc);
           }
