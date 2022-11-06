@@ -37,7 +37,6 @@ export default function eventHandler(type: string, data: any, client: Client) {
 
 type gilEvents = {
   ready: () => void;
-  raw: (data: any) => void;
   error: (err: Error) => void;
   // ----------------------
   // MR.GIL EVENTS

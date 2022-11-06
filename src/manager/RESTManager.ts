@@ -3,11 +3,15 @@ import EventEmitter from 'events';
 import { GuildedApiError } from '../errors/apiError';
 import { request } from 'https';
 import { Client } from '../Client';
+import type TypedEmitter from 'typed-emitter';
+import { IncomingMessage } from 'http';
 
 const version = '0.0.1';
 const userAgent = `Mr.Gil (guilded, ${version})`;
 
-export class RESTManager extends EventEmitter {
+export class RESTManager extends (EventEmitter as unknown as new () => TypedEmitter<{
+  raw: (body: string, data: IncomingMessage) => void;
+}>) {
   token?: string;
   readonly version?: number;
   readonly proxyUrl?: string;
