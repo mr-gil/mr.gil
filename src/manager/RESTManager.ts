@@ -62,9 +62,9 @@ export class RESTManager extends (EventEmitter as unknown as new () => TypedEmit
       const req = request(
         {
           hostname: options?.host || `www.guilded.gg`,
-          path: options.uri || `/api/v${this.version}` + path + searchParams,
+          path: options?.uri || `/api/v${this.version}` + path + searchParams,
           method,
-          headers: options.token
+          headers: options?.token
             ? {
                 'Content-Type': 'application/json',
                 'User-Agent': userAgent
@@ -106,10 +106,14 @@ export class RESTManager extends (EventEmitter as unknown as new () => TypedEmit
 
           response.on('end', () => {
             try {
+              if (!body) return;
               const json = JSON.parse(body);
               if (json.code) reject(JSON.stringify(json));
               else resolve(json);
             } catch (e: any) {
+              if (e instanceof SyntaxError) {
+                return;
+              }
               throw new GuildedApiError(e);
             }
           });

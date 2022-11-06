@@ -1,4 +1,5 @@
 import { APIDoc, Routes } from 'guilded-api-typings';
+import { DocBuilder } from '../builder';
 import { Client } from '../Client';
 import { GuildedApiError } from '../errors/apiError';
 import { DocChannel } from './Channel';
@@ -83,13 +84,23 @@ export class Doc {
       }
     });
   }
-  edit(title: string, content: string) {
+  edit(title: string | DocBuilder, content: string) {
     const docUrl = Routes.doc(this.channelId, this.id);
 
     return new Promise(async (resolve, reject) => {
       try {
+        let data: DocBuilder;
+
+        if (title instanceof DocBuilder) {
+          data = title;
+        } else
+          data = new DocBuilder({
+            title: title as string,
+            content
+          });
+
         const { doc }: { doc: APIDoc } = await this.client.rest.put(docUrl, {
-          body: JSON.stringify({ title, content })
+          body: JSON.stringify(data)
         });
 
         const d = new Doc(doc, {

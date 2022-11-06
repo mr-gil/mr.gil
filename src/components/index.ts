@@ -1,8 +1,9 @@
-export { BaseChannel, ChatChannel, DocChannel } from './Channel';
-export { BaseServer, Emote } from './Server';
-export { Doc } from './Doc';
-export { MemberBan } from './MemberBan';
-export { Message, MessageReaction, Mentions } from './Message';
-export { User, Member } from './User';
-export { Webhook } from './Webhook';
+export * from './Channel';
+export * from './Server';
+export * from './Doc';
+export * from './MemberBan';
+export * from './Message';
+export * from './User';
+export * from './Webhook';
+export * from './ForumTopic';
 export * from './Collection';

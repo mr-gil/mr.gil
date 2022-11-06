@@ -23,7 +23,7 @@ export class Message {
   replies?: string[];
   silent?: boolean;
   webhook?: Webhook | boolean;
-  private obj: {
+  private _obj: {
     channel: ChatChannel;
     member?: Member | Webhook;
   };
@@ -36,6 +36,12 @@ export class Message {
     },
     cache = obj.channel.client.cacheMessage ?? true
   ) {
+    Object.defineProperty(this, '_obj', {
+      enumerable: false,
+      writable: true,
+      value: obj
+    });
+
     const {
       createdAt,
       createdByWebhookId,
@@ -49,11 +55,6 @@ export class Message {
       enumerable: false,
       writable: false,
       value: this.channel.client
-    });
-    Object.defineProperty(this, 'obj', {
-      enumerable: false,
-      writable: true,
-      value: obj
     });
 
     Object.defineProperty(this, 'apiMessage', {
@@ -72,6 +73,10 @@ export class Message {
     this.replies = replyMessageIds;
 
     if (cache) this.channel.messages.cache.set(this.id, this);
+  }
+
+  get obj() {
+    return this._obj;
   }
 
   get server() {

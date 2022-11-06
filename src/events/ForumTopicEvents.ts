@@ -9,7 +9,7 @@ export async function ForumTopicEvents(
 ) {
   if (type.includes('ForumTopicReaction')) return;
 
-  const channel = await client.channels.fetch(data.forumTopic.channelId);
+  const channel = await client.channels.fetch(data.forumTopic?.channelId);
   const fr = new ForumTopic(data.forumTopic, {
     channel,
     member: data.forumTopic.createdByWebhookId

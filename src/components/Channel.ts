@@ -2,22 +2,30 @@ import {
   APIChannel,
   APIDoc,
   APIForumTopic,
+  APIListItem,
   APIMessage,
   ChannelType,
   Routes
 } from 'guilded-api-typings';
-import { MessageEmbed, DocBuilder, ForumBuilder } from '../builder';
+import {
+  MessageEmbed,
+  DocBuilder,
+  ForumBuilder,
+  ListBuilder
+} from '../builder';
 import { Client } from '../Client';
 import { collectorOptions } from '../collectors/BaseCollector';
 import { MessageCollector } from '../collectors/MessageCollector';
 import { GuildedApiError } from '../errors/apiError';
 import { DocManager } from '../manager/DocManager';
 import { ForumTopicManager } from '../manager/ForumTopicManager';
+import { ListItemManager } from '../manager/ListItemManager';
 import { MessageManager } from '../manager/MessageManager';
 import { WebhookManager } from '../manager/WebhookManager';
 import { Collection } from './Collection';
 import { Doc } from './Doc';
 import { ForumTopic } from './ForumTopic';
+import { ListItem } from './ListItem';
 import { Message } from './Message';
 import { BaseServer } from './Server';
 
@@ -35,7 +43,11 @@ type webhook = {
   token: string;
 };
 
-export type AnyChannel = BaseChannel & ChatChannel & DocChannel & ForumChannel;
+export type AnyChannel = BaseChannel &
+  ChatChannel &
+  DocChannel &
+  ForumChannel &
+  ListChannel;
 
 export class BaseChannel {
   archivedAt: Date;
@@ -315,6 +327,80 @@ export class DocChannel extends BaseChannel {
           new Doc(doc, {
             channel: this,
             member: await this.server.members.fetch(doc.createdBy, doc.serverId)
+          })
+        );
+      } catch (err: any) {
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+}
+
+export class ListChannel extends BaseChannel {
+  lists: ListItemManager;
+
+  constructor(
+    channel: APIChannel,
+    obj: { server: BaseServer },
+    client: Client
+  ) {
+    super(channel, obj, client);
+    this.lists = new ListItemManager(this);
+  }
+
+  fetchBulk() {
+    const link = Routes.listItems(this.id);
+
+    return new Promise(async (resolve, reject) => {
+      try {
+        const { listItems }: { listItems: APIListItem[] } =
+          await this.client.rest.get(link);
+
+        const col = new Collection([], { client: this.client });
+
+        listItems.forEach(async (l) => {
+          const list = new ListItem(l, {
+            channel: this,
+            member: await this.server.members.fetch(l.createdBy, this.serverId)
+          });
+
+          col.set(list.id, list);
+        });
+
+        resolve(col);
+      } catch (err: any) {
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+
+  post(message: string | ListBuilder, note?: { content: string }) {
+    const link = Routes.listItems(this.id);
+
+    return new Promise(async (resolve, reject) => {
+      try {
+        let data: ListBuilder;
+
+        if (message instanceof ListBuilder) {
+          data = message;
+        } else
+          new ListBuilder({
+            message: message as string,
+            note
+          });
+
+        const { listItem }: { listItem: APIListItem } =
+          await this.client.rest.post(link, {
+            body: JSON.stringify(data)
+          });
+
+        resolve(
+          new ListItem(listItem, {
+            channel: this,
+            member: await this.server.members.fetch(
+              listItem.createdBy,
+              listItem.serverId
+            )
           })
         );
       } catch (err: any) {

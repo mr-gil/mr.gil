@@ -19,6 +19,8 @@ import {
 } from '../components';
 import { APIServerBan } from 'guilded-api-typings/typings';
 import { ForumTopic, ForumTopicReaction } from '../components/ForumTopic';
+import { ListItem } from '../components/ListItem';
+import { ListItemEvents } from './ListItemEvents';
 
 export default function eventHandler(type: string, data: any, client: Client) {
   if (type.includes('ChatMessage')) MessageEvents(type, data, client);
@@ -33,6 +35,7 @@ export default function eventHandler(type: string, data: any, client: Client) {
   else if (type.includes('ForumTopicReaction'))
     TopicReactionEvents(type, data, client);
   else if (type.includes('ForumTopic')) ForumTopicEvents(type, data, client);
+  else if (type.includes('ListItem')) ListItemEvents(type, data, client);
 }
 
 type gilEvents = {
@@ -83,6 +86,8 @@ type gilEvents = {
   topicUnpin: (forum: ForumTopic) => void;
   topicLock: (forum: ForumTopic) => void;
   topicUnlock: (forum: ForumTopic) => void;
+  // list item events
+  listCreate: (list: ListItem) => void;
 };
 
 type apiEvents = {
@@ -131,6 +136,8 @@ type apiEvents = {
   ForumTopicUnpinned: (forum: ForumTopic) => void;
   ForumTopicLocked: (forum: ForumTopic) => void;
   ForumTopicUnlocked: (forum: ForumTopic) => void;
+  // list item events
+  ListItemCreated: (list: ListItem) => void;
 };
 
 export type clientEvents = apiEvents & gilEvents;
