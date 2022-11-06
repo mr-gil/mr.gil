@@ -30,6 +30,6 @@ export async function dispatch(type: string, data: any, client: Client) {
 
     client.user = await client.users.fetch({}, data?.user);
 
-    client.emit('ready', client);
+    client.emit('ready');
   } else eventHandler(type, data, client);
 }
