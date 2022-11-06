@@ -72,7 +72,7 @@ These events are hard to memorize ?
 You have experience developing bots in discord.js ?
 
 Don't worry,
-We also support discord.js v13 event names too ;)
+Its very similar to the discord.js v13 event names. We do provide better typings for event names. So no need of scrubbing the docs
 ```
 
 # We will finish this marvellous project soon ;)

@@ -1,8 +1,13 @@
 import { EventEmitter } from 'stream';
 import { Client } from '../Client';
 import { Collection } from '../components';
+import type TypedEmitter from 'typed-emitter';
 
-export class BaseCollector<type extends collectorItem> extends EventEmitter {
+export class BaseCollector<
+  type extends collectorItem
+> extends (EventEmitter as unknown as new () => TypedEmitter<
+  collectorEvents<any>
+>) {
   collected: Collection<type['id'], type>;
   createdAt: Date;
   ended: boolean;
@@ -60,33 +65,11 @@ export class BaseCollector<type extends collectorItem> extends EventEmitter {
   }
 }
 
-export interface BaseCollector<type extends collectorItem> {
-  on<Event extends keyof collectorEvents<type>>(
-    event: Event,
-    listener: (...args: collectorEvents<type>[Event]) => any
-  ): this;
-
-  off<Event extends keyof collectorEvents<type>>(
-    event: Event,
-    listener: (...args: collectorEvents<type>[Event]) => any
-  ): this;
-
-  once<Event extends keyof collectorEvents<type>>(
-    event: Event,
-    listener: (...args: collectorEvents<type>[Event]) => any
-  ): this;
-
-  emit<Event extends keyof collectorEvents<type>>(
-    event: Event,
-    ...args: collectorEvents<type>[Event]
-  ): boolean;
-}
-
-export interface collectorEvents<type> {
-  collect: [item: type];
-  dispose: [item: type];
-  end: [collected: Collection<any, type>];
-}
+export type collectorEvents<type> = {
+  collect: (item: type) => void;
+  dispose: (item: type) => void;
+  end: (collected: Collection<string | number, type>) => void;
+};
 
 export interface collectorOptions<type> {
   dispose?: boolean;

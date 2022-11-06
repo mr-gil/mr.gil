@@ -9,7 +9,8 @@ import { GuildedApiError } from './errors/apiError';
 import { RESTManager } from './manager/RESTManager';
 import { dispatch } from './misc/dispatch';
 import { shard } from './ws/shard';
-
+import type TypedEmitter from 'typed-emitter';
+import { clientEvents } from './events';
 /**
  * The Client options to create a instance of the core (optional)
  * @example
@@ -36,7 +37,7 @@ type clientOptions = {
  * @extends {EventEmitter}
  */
 
-export class Client extends EventEmitter {
+export class Client extends (EventEmitter as unknown as new () => TypedEmitter<clientEvents>) {
   cacheDocs?: boolean;
   cacheForumTopics: boolean;
   cacheMessage: boolean;

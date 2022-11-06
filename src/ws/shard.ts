@@ -80,7 +80,7 @@ export class shard extends ws {
       this.onSocketDisconnect.bind(this);
     });
     this.on('error', (e) => {
-      this.client.emit('apiError', e);
+      this.client.emit('error', e);
       throw new GuildedApiError(e);
     });
   }

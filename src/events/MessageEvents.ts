@@ -1,4 +1,4 @@
-import { APIMessage } from 'guilded-api-typings/typings';
+import { APIMessage } from 'guilded-api-typings';
 import { Client } from '../Client';
 import { Message } from '../components';
 

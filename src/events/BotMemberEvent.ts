@@ -1,4 +1,4 @@
-import { APIServer } from 'guilded-api-typings/typings';
+import { APIServer } from 'guilded-api-typings';
 import { Client } from '../Client';
 import { BaseServer, Member } from '../components';
 
@@ -15,4 +15,4 @@ export async function BotMemberEvent(
   client.emit('BotTeamMembershipCreated', obj);
 }
 
-type botCreate = { server: BaseServer; member: Member };
+export type botCreate = { server: BaseServer; member: Member };

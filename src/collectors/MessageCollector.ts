@@ -25,10 +25,10 @@ export class MessageReactionCollector extends BaseCollector<MessageReaction> {
     options?: collectorOptions<MessageReaction>
   ) {
     super(message.client, options);
-    this.client.on('messageReactionAdd', (r: MessageReaction) =>
+    this.client.on('messageReact', (r: MessageReaction) =>
       this.reactionCollect(r)
     );
-    this.client.on('messageReactionRemove', (r: MessageReaction) =>
+    this.client.on('messageUnreact', (r: MessageReaction) =>
       this.dispose(r.id)
     );
   }

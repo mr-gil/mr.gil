@@ -1,4 +1,4 @@
-import { APIMessageReaction } from 'guilded-api-typings/typings';
+import { APIMessageReaction } from 'guilded-api-typings';
 import { Client } from '../Client';
 import { MessageReaction } from '../components';
 
@@ -15,11 +15,9 @@ export async function MessageReactionEvents(
   const reaction = new MessageReaction(data.reaction, { message, member });
   if (type == 'ChannelMessageReactionCreated') {
     client.emit('messageReact', reaction);
-    client.emit('messageReactionAdd', reaction);
     client.emit('ChannelMessageReactionCreated', reaction);
   } else if (type == 'ChannelMessageReactionDeleted') {
     client.emit('messageUnreact', reaction);
-    client.emit('messageReactionRemove', reaction);
     client.emit('ChannelMessageReactionDeleted', reaction);
   }
 }

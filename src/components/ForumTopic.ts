@@ -62,7 +62,7 @@ export class ForumTopic {
     return this.obj.channel.server;
   }
 
-  delete() {
+  delete(): Promise<boolean> {
     const link = Routes.forumTopic(this.channelId, this.id);
 
     return new Promise(async (resolve) => {
@@ -77,7 +77,7 @@ export class ForumTopic {
     });
   }
 
-  edit(title?: string, content?: string) {
+  edit(title?: string, content?: string): Promise<ForumTopic | boolean> {
     const link = Routes.forumTopic(this.channelId, this.id);
 
     return new Promise(async (resolve) => {
@@ -99,7 +99,7 @@ export class ForumTopic {
     });
   }
 
-  pin() {
+  pin(): Promise<boolean> {
     const link = Routes.forumTopicPin(this.channel.id, this.id);
 
     return new Promise(async (resolve) => {
@@ -113,7 +113,7 @@ export class ForumTopic {
     });
   }
 
-  unpin() {
+  unpin(): Promise<boolean> {
     const link = Routes.forumTopicPin(this.channel.id, this.id);
 
     return new Promise(async (resolve) => {
@@ -127,7 +127,7 @@ export class ForumTopic {
     });
   }
 
-  react(emojiId: number) {
+  react(emojiId: number): Promise<boolean> {
     const link =
       Routes.forumTopic(this.channel.id, this.id) + `/emotes/${emojiId}`;
 
@@ -142,7 +142,7 @@ export class ForumTopic {
     });
   }
 
-  unreact(emojiId: number) {
+  unreact(emojiId: number): Promise<boolean> {
     const link =
       Routes.forumTopic(this.channel.id, this.id) + `/emotes/${emojiId}`;
 
@@ -157,7 +157,7 @@ export class ForumTopic {
     });
   }
 
-  lock() {
+  lock(): Promise<boolean> {
     const link = Routes.forumTopicLock(this.channel.id, this.id);
 
     return new Promise(async (resolve) => {
@@ -171,13 +171,40 @@ export class ForumTopic {
     });
   }
 
-  unlock() {
+  unlock(): Promise<boolean> {
     const link = Routes.forumTopicLock(this.channel.id, this.id);
 
     return new Promise(async (resolve) => {
       try {
         await this.channel.client.rest.delete(link);
         resolve(true);
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+
+  comment(content: string): Promise<ForumTopicComment | boolean> {
+    const link = Routes.forumTopic(this.channel.id, this.id) + `/comments`;
+
+    return new Promise(async (resolve) => {
+      try {
+        const { forumTopicComment } = await this.channel.client.rest.post(
+          link,
+          {
+            body: JSON.stringify({ content: content })
+          }
+        );
+
+        const comment = new ForumTopicComment(forumTopicComment, {
+          topic: this,
+          member: await this.channel.server.members.fetch(
+            this.createdBy,
+            this.serverId
+          )
+        });
+        resolve(comment);
       } catch (err) {
         resolve(false);
         throw new GuildedApiError(err);
@@ -223,4 +250,97 @@ export class ForumTopicReaction extends String {
       }
     });
   }
+}
+
+export class ForumTopicComment {
+  content: string;
+  createdAt: Date;
+  createdBy: string;
+  forumTopicId: number;
+  id: number;
+  obj?: { topic: ForumTopic; member: Member };
+  updatedAt?: Date;
+
+  constructor(
+    comment: APIForumComment,
+    obj: { topic: ForumTopic; member: Member }
+  ) {
+    Object.defineProperty(this, 'obj', {
+      enumerable: false,
+      writable: false,
+      value: obj
+    });
+
+    this.content = comment.content;
+    this.createdAt = new Date(comment.createdAt);
+    this.createdBy = comment.createdBy;
+    this.forumTopicId = comment.forumTopicId;
+    this.id = comment.id;
+    this.updatedAt = comment.updatedAt;
+  }
+
+  get author() {
+    return this.obj.member;
+  }
+
+  get topic() {
+    return this.obj.topic;
+  }
+
+  toString() {
+    return this.content;
+  }
+
+  delete(): Promise<boolean> {
+    const link =
+      Routes.forumTopic(this.topic.channel.id, this.topic.id) +
+      `/comments/${this.id}`;
+
+    return new Promise(async (resolve) => {
+      try {
+        await this.topic.channel.client.rest.delete(link);
+
+        resolve(true);
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+
+  edit(content: string): Promise<ForumTopicComment | boolean> {
+    const link =
+      Routes.forumTopic(this.topic.channel.id, this.topic.id) +
+      `/comments/${this.id}`;
+
+    return new Promise(async (resolve) => {
+      try {
+        const { forumTopicComment } =
+          await this.topic.channel.client.rest.patch(link, {
+            body: JSON.stringify({ content: content })
+          });
+
+        const comment = new ForumTopicComment(forumTopicComment, {
+          topic: this.topic,
+          member: await this.topic.channel.server.members.fetch(
+            this.createdBy,
+            this.topic.serverId
+          )
+        });
+        resolve(comment);
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+}
+
+export interface APIForumComment {
+  content: string;
+  createdAt: Date;
+  createdBy: string;
+  forumTopicId: number;
+  id: number;
+  updatedAt?: Date;
 }

@@ -1,4 +1,4 @@
-import { APIWebhook } from 'guilded-api-typings/typings';
+import { APIWebhook } from 'guilded-api-typings';
 import { Client } from '../Client';
 import { Webhook } from '../components';
 
@@ -9,13 +9,16 @@ export async function TeamWebhookEvents(
 ) {
   const channel = await client.channels.fetch(data.webhook.channelId);
 
-  const webhook = new Webhook(channel, data.webhook);
-
   if (type === 'TeamWebhookCreated') {
+    const webhook = new Webhook(channel, data.webhook);
+
     client.emit('webhookCreate', webhook);
     client.emit('TeamWebhookCreated', webhook);
   } else if (type === 'TeamWebhookUpdated') {
-    client.emit('webhookUpdate', webhook);
-    client.emit('TeamWebhookUpdated', webhook);
+    const oldWebhook = await channel.webhooks.fetch(data.webhook.id);
+
+    const webhook = new Webhook(channel, data.webhook);
+    client.emit('webhookUpdate', oldWebhook, webhook);
+    client.emit('TeamWebhookUpdated', oldWebhook, webhook);
   }
 }

@@ -38,7 +38,7 @@ type updates = {
   roleIds: number[];
 };
 
-type roleUpdate = {
+export type roleUpdate = {
   server?: BaseServer;
   updates?: updates[];
 };
