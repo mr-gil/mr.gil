@@ -12,7 +12,7 @@ export async function BotMemberEvent(
 
   const obj: botCreate = { server, member };
   client.emit('botCreate', obj);
-  client.emit('BotTeamMembershipCreated', obj);
+  client.emit('BotServerMembershipCreated', obj);
 }
 
 export type botCreate = { server: BaseServer; member: Member };

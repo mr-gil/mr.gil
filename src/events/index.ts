@@ -1,11 +1,11 @@
 import { Client } from '../Client';
 import { MessageEvents } from './MessageEvents';
-import { TeamMemberEvents } from './TeamMemberEvents';
+import { ServerMemberEvents } from './ServerMemberEvents';
 import { DocEvents } from './DocEvents';
 import { botCreate, BotMemberEvent } from './BotMemberEvent';
-import { roleUpdate, TeamRolesEvent } from './TeamRolesEvent';
+import { roleUpdate, ServerRolesEvent } from './ServerRolesEvent';
 import { MessageReactionEvents } from './MessageReactionEvents';
-import { TeamWebhookEvents } from './TeamWebhookEvents';
+import { ServerWebhookEvents } from './ServerWebhookEvents';
 import { ForumTopicEvents } from './ForumTopicEvents';
 import { TopicReactionEvents } from './TopicReactionEvents';
 import {
@@ -24,14 +24,16 @@ import { ListItemEvents } from './ListItemEvents';
 
 export default function eventHandler(type: string, data: any, client: Client) {
   if (type.includes('ChatMessage')) MessageEvents(type, data, client);
-  else if (type.includes('TeamMember')) TeamMemberEvents(type, data, client);
+  else if (type.includes('ServerMember'))
+    ServerMemberEvents(type, data, client);
   else if (type.includes('Doc')) DocEvents(type, data, client);
-  else if (type == 'BotTeamMembershipCreated')
+  else if (type == 'BotServerMembershipCreated')
     BotMemberEvent(type, data, client);
-  else if (type == 'teamRolesUpdated') TeamRolesEvent(type, data, client);
+  else if (type == 'ServerRolesUpdated') ServerRolesEvent(type, data, client);
   else if (type.includes('ChannelMessageReaction'))
     MessageReactionEvents(type, data, client);
-  else if (type.includes('TeamWebhook')) TeamWebhookEvents(type, data, client);
+  else if (type.includes('ServerWebhook'))
+    ServerWebhookEvents(type, data, client);
   else if (type.includes('ForumTopicReaction'))
     TopicReactionEvents(type, data, client);
   else if (type.includes('ForumTopic')) ForumTopicEvents(type, data, client);
@@ -55,9 +57,9 @@ type gilEvents = {
   messageReact: (reaction: MessageReaction) => void;
   messageUnreact: (reaction: MessageReaction) => void;
 
-  // team roles event
+  // Server roles event
   roleUpdate: (update: roleUpdate) => void;
-  // team member events
+  // Server member events
   memberJoin: (member: Member) => void;
   memberKick: (user: User) => void;
   memberRemove: (user: User) => void;
@@ -88,6 +90,10 @@ type gilEvents = {
   topicUnlock: (forum: ForumTopic) => void;
   // list item events
   listCreate: (list: ListItem) => void;
+  listUpdate: (newList: ListItem, oldList: ListItem) => void;
+  listDelete: (list: ListItem) => void;
+  listComplete: (list: ListItem) => void;
+  listUncomplete: (list: ListItem) => void;
 };
 
 type apiEvents = {
@@ -104,21 +110,21 @@ type apiEvents = {
   ChannelMessageReactionDeleted: (reaction: MessageReaction) => void;
   ChannelMessageReactionCreated: (reaction: MessageReaction) => void;
 
-  // team roles event
-  teamRolesUpdated: (update: roleUpdate) => void;
+  // server roles event
+  ServerRolesUpdated: (update: roleUpdate) => void;
 
-  // team member events
-  TeamMemberJoined: (member: Member) => void;
-  TeamMemberRemoved: (user: User) => void;
-  TeamMemberBanned: (ban: MemberBan | APIServerBan) => void;
-  TeamMemberUnbanned: (ban: MemberBan | APIServerBan) => void;
-  TeamMemberUpdated: (oldMember: Member, newMember: Member) => void;
+  // server member events
+  ServerMemberJoined: (member: Member) => void;
+  ServerMemberRemoved: (user: User) => void;
+  ServerMemberBanned: (ban: MemberBan | APIServerBan) => void;
+  ServerMemberUnbanned: (ban: MemberBan | APIServerBan) => void;
+  ServerMemberUpdated: (oldMember: Member, newMember: Member) => void;
 
   // webhook events
-  TeamWebhookCreated: (webhook: Webhook) => void;
-  TeamWebhookUpdated: (oldwebhook: Webhook, webhook: Webhook) => void;
+  ServerWebhookCreated: (webhook: Webhook) => void;
+  ServerWebhookUpdated: (oldwebhook: Webhook, webhook: Webhook) => void;
   // bot create events
-  BotTeamMembershipCreated: (bot: botCreate) => void;
+  BotServerMembershipCreated: (bot: botCreate) => void;
 
   // doc events
   DocCreated: (doc: Doc) => void;
@@ -138,6 +144,10 @@ type apiEvents = {
   ForumTopicUnlocked: (forum: ForumTopic) => void;
   // list item events
   ListItemCreated: (list: ListItem) => void;
+  ListItemUpdated: (newList: ListItem, oldList: ListItem) => void;
+  ListItemDeleted: (list: ListItem) => void;
+  ListItemCompleted: (list: ListItem) => void;
+  ListItemUncompleted: (list: ListItem) => void;
 };
 
 export type clientEvents = apiEvents & gilEvents;

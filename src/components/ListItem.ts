@@ -10,6 +10,7 @@ import { Webhook } from './Webhook';
 export class ListItem {
   _client: Client;
   channelId: string;
+  completed: boolean;
   completedAt?: Date;
   completedBy?: Member;
   createdAt: Date;
@@ -29,7 +30,7 @@ export class ListItem {
 
   constructor(
     item: APIListItem,
-    obj: { channel: ListChannel; member: Member | Webhook }
+    obj: { channel: ListChannel; member: Member | Webhook; completed?: Member }
   ) {
     Object.defineProperty(this, 'obj', {
       enumerable: false,
@@ -44,13 +45,10 @@ export class ListItem {
     });
 
     this.channelId = item.channelId;
-    if (this.completedBy) {
+    this.completed = item.completedAt !== undefined;
+    if (this.completed) {
       this.completedAt = new Date(item.completedAt);
-      this.channel.server.members
-        .fetch(item.completedBy, item.serverId)
-        .then((a) => {
-          this.completedBy = a;
-        });
+      this.completedBy = obj.completed;
     }
     this.createdAt = new Date(item.createdAt);
     this.createdBy = item.createdBy;
@@ -65,7 +63,7 @@ export class ListItem {
     this.id = item.id;
     this.mentions = new Mentions(item.mentions);
     this.message = item.message;
-    if (item.note) this.note = new ListNote(item.note, this);
+    if (item.note) this.note = new ListNote(item.note);
     this.parentListItemId = item.parentListItemId;
     this.serverId = item.serverId;
     this.updatedAt = new Date(this.updatedAt);
@@ -166,7 +164,7 @@ export class ListNote {
   updatedAt?: Date;
   updatedBy?: string;
 
-  constructor(note: APIListItemNote, list: ListItem) {
+  constructor(note: APIListItemNote) {
     this.content = note.content;
     this.createdAt = new Date(note.createdAt);
     this.createdBy = note.createdBy;
@@ -175,7 +173,6 @@ export class ListNote {
       this.updatedAt = new Date(note.updatedAt);
       this.updatedBy = note.updatedBy;
     }
-    this.list = list;
   }
 
   async member() {

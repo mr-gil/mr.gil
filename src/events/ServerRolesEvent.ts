@@ -1,7 +1,7 @@
 import { Client } from '../Client';
 import { BaseServer, Member } from '../components';
 
-export async function TeamRolesEvent(
+export async function ServerRolesEvent(
   type: string,
   data: { serverId: string; memberRoleIds: memberRoles[] },
   client: Client
@@ -28,7 +28,7 @@ export async function TeamRolesEvent(
     const obj: roleUpdate = { server, updates };
 
     client.emit('roleUpdate', obj);
-    client.emit('teamRolesUpdated', obj);
+    client.emit('ServerRolesUpdated', obj);
   });
 }
 

@@ -7,7 +7,8 @@
   "scripts": {
     "test": "node test",
     "dev": "npm publish --tag dev",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "format": "npx pretty-quick"
   },
   "repository": {
     "type": "git",

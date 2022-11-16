@@ -8,7 +8,13 @@ import {
 } from 'guilded-api-typings';
 import { Client } from '../Client';
 import { GuildedApiError } from '../errors/apiError';
-import { AnyChannel, BaseChannel, DocChannel, ForumChannel } from './Channel';
+import {
+  AnyChannel,
+  BaseChannel,
+  DocChannel,
+  ForumChannel,
+  ListChannel
+} from './Channel';
 import { BaseServer, User, Member, ChatChannel } from './index';
 
 type collectionObj = {
@@ -131,6 +137,15 @@ export class ChannelCollection extends Collection<string, AnyChannel> {
               this.client
             ) as AnyChannel;
 
+            break;
+          case 'list':
+            newObj = new ListChannel(
+              channel,
+              {
+                server: server
+              },
+              this.client
+            ) as AnyChannel;
             break;
           default:
             newObj = new BaseChannel(

@@ -1,20 +1,47 @@
 # Mr.Gil
 
-- ### This is a work-in-progress project.
+```
+This is a work-in-progress project.
+```
 
 ### The future of Guilded wrapper..
 
+---
+
 # Coming soon.
 
-## What's Implemented ?
+---
 
-- **26/40 Events**
+## Update
+
+- Absorbing all Event name changes. now API Event names are changed. See the API Docs.
+
+---
+
+# What's Implemented ?
+
+- **31/40 Events**
+
+### BotMember
+
+- BotServerMembershipCreated (botCreate event)
+
+### ChannelMessageReaction
+
+- ChannelMessageReactionCreated (messageReact event)
+- ChannelMessageReactionDeleted (messageUnreact event)
 
 ### ChatMessage
 
 - ChatMessageCreated (messageCreate event)
 - ChatMessageDeleted (messageDelete event)
 - ChatMessageUpdated (messageUpdate event)
+
+### Doc
+
+- DocCreated (docCreate event)
+- DocUpdated (docUpdate event)
+- DocDeleted (docDelete event)
 
 ### ForumTopic
 
@@ -26,42 +53,43 @@
 - ForumTopicLocked (topicLock event)
 - ForumTopicUnlocked (topicUnlock event)
 
-### TeamMember
-
-- TeamMemberJoined (memberJoin event)
-- TeamMemberRemoved (memberRemove event)
-- TeamMemberBanned (memberBan event)
-- TeamMemberUnbanned (memberUnban event)
-- TeamMemberUpdated (memberUpdate event)
-
-### Doc
-
-- DocCreated (docCreate event)
-- DocUpdated (docUpdate event)
-- DocDeleted (docDelete event)
-
-### ChannelMessageReaction
-
-- ChannelMessageReactionCreated (messageReact event)
-- ChannelMessageReactionDeleted (messageUnreact event)
-
 ### ForumTopicReaction
 
 - ForumTopicReactionCreated (topicReact event)
 - ForumTopicReactionDeleted (topicUnreact event)
 
-### teamRoles
+### ListItem
 
-- teamRolesUpdated (roleUpdate event)
+- ListItemCreated (listCreate event)
+- ListItemUpdated (listUpdate event)
+- ListItemDeleted (listDelete event)
+- ListItemCompleted (listComplete event)
+- ListItemUncompleted (listUncomplete event)
 
-### BotMember
+### ServerMember
 
-- BotTeamMembershipCreated (botCreate event)
+- ServerMemberJoined (memberJoin event)
+- ServerMemberRemoved (memberRemove event)
+- ServerMemberBanned (memberBan event)
+- ServerMemberUnbanned (memberUnban event)
+- ServerMemberUpdated (memberUpdate event)
 
-### TeamWebhook
+### ServerRoles
 
-- TeamWebhookCreated (webhookCreate event)
-- TeamWebhookUpdated (webhookUpdate event)
+- ServerRolesUpdated (roleUpdate event)
+
+### ServerWebhook
+
+- ServerWebhookCreated (webhookCreate event)
+- ServerWebhookUpdated (webhookUpdate event)
+
+---
+
+# What's left
+
+- ### CalenderEventRsvp `(3 events)`
+- ### CalenderEvent `(3 events)`
+- ### TeamChannel `(3 events)`
 
 ---
 
@@ -75,4 +103,4 @@ Don't worry,
 Its very similar to the discord.js v13 event names. We do provide better typings for event names. So no need of scrubbing the docs
 ```
 
-# We will finish this marvellous project soon ;)
+## We will finish this marvellous project soon ;)
