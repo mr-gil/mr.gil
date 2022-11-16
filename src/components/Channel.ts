@@ -1,4 +1,5 @@
 import {
+  APICalendarEvent,
   APIChannel,
   APIDoc,
   APIForumTopic,
@@ -11,23 +12,30 @@ import {
   MessageEmbed,
   DocBuilder,
   ForumBuilder,
-  ListBuilder
+  ListBuilder,
+  CalendarBuilder
 } from '../builder';
 import { Client } from '../Client';
 import { collectorOptions } from '../collectors/BaseCollector';
 import { MessageCollector } from '../collectors/MessageCollector';
 import { GuildedApiError } from '../errors/apiError';
-import { DocManager } from '../manager/DocManager';
-import { ForumTopicManager } from '../manager/ForumTopicManager';
-import { ListItemManager } from '../manager/ListItemManager';
-import { MessageManager } from '../manager/MessageManager';
-import { WebhookManager } from '../manager/WebhookManager';
-import { Collection } from './Collection';
-import { Doc } from './Doc';
-import { ForumTopic } from './ForumTopic';
-import { ListItem } from './ListItem';
-import { Message } from './Message';
-import { BaseServer } from './Server';
+import {
+  DocManager,
+  WebhookManager,
+  ForumTopicManager,
+  ListItemManager,
+  MessageManager,
+  CalendarManager
+} from '../manager';
+import {
+  ForumTopic,
+  ListItem,
+  Message,
+  BaseServer,
+  Doc,
+  Collection,
+  Calendar
+} from '.';
 
 type messageSend = {
   content?: string;
@@ -47,7 +55,8 @@ export type AnyChannel = BaseChannel &
   ChatChannel &
   DocChannel &
   ForumChannel &
-  ListChannel;
+  ListChannel &
+  CalendarChannel;
 
 export class BaseChannel {
   archivedAt: Date;
@@ -400,6 +409,49 @@ export class ListChannel extends BaseChannel {
             member: await this.server.members.fetch(
               listItem.createdBy,
               listItem.serverId
+            )
+          })
+        );
+      } catch (err: any) {
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+}
+
+export class CalendarChannel extends BaseChannel {
+  calendars: CalendarManager;
+
+  constructor(
+    channel: APIChannel,
+    obj: { server: BaseServer },
+    client: Client
+  ) {
+    super(channel, obj, client);
+    this.calendars = new CalendarManager(this);
+  }
+
+  create(cal: CalendarBuilder) {
+    const link = Routes.calendarEvents(this.id);
+
+    return new Promise(async (resolve, reject) => {
+      try {
+        if (!cal)
+          throw new GuildedApiError(
+            'You have not provided a CalendarBuilder as the argument.'
+          );
+
+        const { calendarEvent }: { calendarEvent: APICalendarEvent } =
+          await this.client.rest.post(link, {
+            body: JSON.stringify(cal)
+          });
+
+        resolve(
+          new Calendar(calendarEvent, {
+            channel: this,
+            member: await this.server.members.fetch(
+              calendarEvent.createdBy,
+              calendarEvent.serverId
             )
           })
         );

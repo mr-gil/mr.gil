@@ -30,7 +30,8 @@ export class ListItem {
 
   constructor(
     item: APIListItem,
-    obj: { channel: ListChannel; member: Member | Webhook; completed?: Member }
+    obj: { channel: ListChannel; member: Member | Webhook; completed?: Member },
+    cache = obj.channel.client.cacheLists ?? true
   ) {
     Object.defineProperty(this, 'obj', {
       enumerable: false,
@@ -69,6 +70,8 @@ export class ListItem {
     this.updatedAt = new Date(this.updatedAt);
     this.updatedBy = this.updatedBy;
     this.webhook = this.createdByWebhookId ? true : false;
+
+    if (cache) this.channel.lists.cache.set(this.id, this);
   }
 
   get channel() {

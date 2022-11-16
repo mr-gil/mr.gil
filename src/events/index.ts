@@ -9,6 +9,7 @@ import { ServerWebhookEvents } from './ServerWebhookEvents';
 import { ForumTopicEvents } from './ForumTopicEvents';
 import { TopicReactionEvents } from './TopicReactionEvents';
 import {
+  Calendar,
   Doc,
   Member,
   MemberBan,
@@ -17,10 +18,11 @@ import {
   User,
   Webhook
 } from '../components';
-import { APIServerBan } from 'guilded-api-typings/typings';
+import { APIServerBan } from 'guilded-api-typings';
 import { ForumTopic, ForumTopicReaction } from '../components/ForumTopic';
 import { ListItem } from '../components/ListItem';
 import { ListItemEvents } from './ListItemEvents';
+import { CalendarEvents } from './CalendarEvents';
 
 export default function eventHandler(type: string, data: any, client: Client) {
   if (type.includes('ChatMessage')) MessageEvents(type, data, client);
@@ -38,6 +40,7 @@ export default function eventHandler(type: string, data: any, client: Client) {
     TopicReactionEvents(type, data, client);
   else if (type.includes('ForumTopic')) ForumTopicEvents(type, data, client);
   else if (type.includes('ListItem')) ListItemEvents(type, data, client);
+  else if (type.includes('CalendarEvent')) CalendarEvents(type, data, client);
 }
 
 type gilEvents = {
@@ -94,6 +97,11 @@ type gilEvents = {
   listDelete: (list: ListItem) => void;
   listComplete: (list: ListItem) => void;
   listUncomplete: (list: ListItem) => void;
+
+  // calendar events
+  calendarCreate: (cal: Calendar) => void;
+  calendarUpdate: (cal: Calendar, oldCal: Calendar) => void;
+  calendarDelete: (cal: Calendar) => void;
 };
 
 type apiEvents = {
@@ -148,6 +156,10 @@ type apiEvents = {
   ListItemDeleted: (list: ListItem) => void;
   ListItemCompleted: (list: ListItem) => void;
   ListItemUncompleted: (list: ListItem) => void;
+  // calendar events
+  CalendarEventCreated: (cal: Calendar) => void;
+  CalendarEventUpdated: (cal: Calendar, oldCal: Calendar) => void;
+  CalendarEventDeleted: (cal: Calendar) => void;
 };
 
 export type clientEvents = apiEvents & gilEvents;

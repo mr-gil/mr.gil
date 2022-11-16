@@ -15,16 +15,25 @@ This is a work-in-progress project.
 ## Update
 
 - Absorbing all Event name changes. now API Event names are changed. See the API Docs.
+- Many many events are here
+- 6 events pending
+- Everythings tested ! Fixed many bugs
 
 ---
 
 # What's Implemented ?
 
-- **31/40 Events**
+- !!! **34/40 Events** !!!
 
 ### BotMember
 
 - BotServerMembershipCreated (botCreate event)
+
+### CalendarEvent
+
+- CalendarEventCreated (calendarCreate event)
+- CalendarEventUpdated (calendarUpdate event)
+- CalendarEventDeleted(calendarDelete event)
 
 ### ChannelMessageReaction
 
@@ -88,7 +97,6 @@ This is a work-in-progress project.
 # What's left
 
 - ### CalenderEventRsvp `(3 events)`
-- ### CalenderEvent `(3 events)`
 - ### TeamChannel `(3 events)`
 
 ---

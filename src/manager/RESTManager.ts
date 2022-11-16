@@ -50,7 +50,7 @@ export class RESTManager extends (EventEmitter as unknown as new () => TypedEmit
   >(
     path: string,
     method: string,
-    options?: FetchOptions<B, P>,
+    options?: APIFetchOptions<B, P>,
     retries = 0
   ): Promise<R> {
     return new Promise(async (resolve, reject) => {
@@ -162,7 +162,7 @@ export interface RESTOptions {
   maxRetries?: number;
 }
 
-export interface FetchOptions<
+export interface APIFetchOptions<
   B = any,
   P extends Record<string, any> = Record<string, any>
 > {

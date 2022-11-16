@@ -26,7 +26,7 @@ export class ForumTopic {
   constructor(
     forum: (APIForumTopic & { isLocked: boolean; isPinned: boolean }) | any,
     obj: { channel: ForumChannel; member?: Member | Webhook },
-    cache = obj.channel.client.cacheForumTopics ?? true
+    cache = obj.channel.client.cacheTopics ?? true
   ) {
     Object.defineProperty(this, 'obj', {
       enumerable: false,

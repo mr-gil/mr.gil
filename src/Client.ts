@@ -6,7 +6,7 @@ import {
   UserCollection
 } from './components/Collection';
 import { GuildedApiError } from './errors/apiError';
-import { RESTManager } from './manager/RESTManager';
+import { RESTManager } from './manager';
 import { dispatch } from './misc/dispatch';
 import { shard } from './ws/shard';
 import type TypedEmitter from 'typed-emitter';
@@ -18,14 +18,17 @@ import { clientEvents } from './events';
  */
 
 type clientOptions = {
+  cacheCalendar?: boolean;
+  cacheLists?: boolean;
   cacheDocs?: boolean;
-  restRetryInterval?: number;
-  restRetries?: number;
+  cacheTopics?: boolean;
+  cacheMessage?: boolean;
+  cacheSize?: number;
   intents?: number;
+  restRetries?: number;
+  restRetryInterval?: number;
   token?: string;
   versionGateway?: number;
-  cacheSize?: number;
-  cacheMessage?: boolean;
 };
 
 /**
@@ -39,7 +42,9 @@ type clientOptions = {
 
 export class Client extends (EventEmitter as unknown as new () => TypedEmitter<clientEvents>) {
   cacheDocs?: boolean;
-  cacheForumTopics: boolean;
+  cacheCalendar: boolean;
+  cacheTopics: boolean;
+  cacheLists: boolean;
   cacheMessage: boolean;
   cacheSize: number;
   channels: ChannelCollection;

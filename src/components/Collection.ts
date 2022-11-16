@@ -11,6 +11,7 @@ import { GuildedApiError } from '../errors/apiError';
 import {
   AnyChannel,
   BaseChannel,
+  CalendarChannel,
   DocChannel,
   ForumChannel,
   ListChannel
@@ -140,6 +141,15 @@ export class ChannelCollection extends Collection<string, AnyChannel> {
             break;
           case 'list':
             newObj = new ListChannel(
+              channel,
+              {
+                server: server
+              },
+              this.client
+            ) as AnyChannel;
+            break;
+          case 'calendar':
+            newObj = new CalendarChannel(
               channel,
               {
                 server: server

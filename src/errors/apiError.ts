@@ -7,7 +7,6 @@ export class GuildedApiError extends Error {
    */
 
   constructor(err: APIError | any) {
-    console.log(err);
     const errJSON = JSON.parse(err);
     const msg = !errJSON
       ? `"${err}"`

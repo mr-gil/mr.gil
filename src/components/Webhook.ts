@@ -1,6 +1,6 @@
 import { APIMessage, APIWebhook, Routes } from 'guilded-api-typings';
 import { GuildedApiError } from '../errors/apiError';
-import { FetchOptions } from '../manager/BaseManager';
+import { FetchOptions } from '../manager';
 import { BaseChannel, ChatChannel } from './Channel';
 import { Message, messageSend } from './Message';
 
