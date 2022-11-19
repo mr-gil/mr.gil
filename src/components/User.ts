@@ -77,6 +77,43 @@ export class Member extends String {
     return this.obj.server;
   }
 
+  addXP(amount: number, userId: string) {
+    const link = Routes.serverMemberXp(this.server.id, userId);
+
+    return new Promise(async (resolve) => {
+      try {
+        const { total }: { total: number } = await this._client.rest.post(
+          link,
+          {
+            body: JSON.stringify({ amount: amount })
+          }
+        );
+
+        resolve(total);
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+
+  setXP(amount: number, userId: string) {
+    const link = Routes.serverMemberXp(this.server.id, userId);
+
+    return new Promise(async (resolve) => {
+      try {
+        const { total }: { total: number } = await this._client.rest.put(link, {
+          body: JSON.stringify({ total: amount })
+        });
+
+        resolve(total);
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+
   toString() {
     return `<@${this.id}>`;
   }

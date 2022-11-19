@@ -1,7 +1,7 @@
 {
   "name": "mr.gil",
-  "version": "0.0.4",
-  "description": "A Guilded wrapper written in Typescript",
+  "version": "0.0.5",
+  "description": "A Powerful Guilded wrapper written in Typescript",
   "main": "lib/mrgil.js",
   "typings": "typings/mrgil.d.ts",
   "scripts": {
@@ -16,7 +16,23 @@
   },
   "keywords": [
     "guilded",
-    "wrapper"
+    "wrapper",
+    "typescript",
+    "api",
+    "guildedjs",
+    "guilded.ts",
+    "touchguild",
+    "discord.js",
+    "discordjs",
+    "bots",
+    "botmaker",
+    "bot",
+    "mrgil",
+    "giljs",
+    "gil",
+    "guild",
+    "discord",
+    "chatbot"
   ],
   "license": "CC BY-NC-ND 4.0",
   "author": "Rahuletto",

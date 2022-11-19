@@ -18,17 +18,17 @@ export class MessageEmbed {
   title?: string;
   url?: string;
 
-  constructor(data: embedBuilderOptions) {
-    this.title = data.title;
-    this.description = data.description;
-    this.url = data.url;
-    this.color = data.color;
-    this.footer = data.footer;
-    this.timestamp = data.timestamp ? new Date(data.timestamp) : undefined;
-    this.thumbnail = data.thumbnail;
-    this.image = data.image;
-    this.author = data.author;
-    this.fields = data.fields ?? [];
+  constructor(data?: embedBuilderOptions) {
+    this.title = data?.title;
+    this.description = data?.description;
+    this.url = data?.url;
+    this.color = data?.color;
+    this.footer = data?.footer;
+    this.timestamp = data?.timestamp ? new Date(data.timestamp) : undefined;
+    this.thumbnail = data?.thumbnail;
+    this.image = data?.image;
+    this.author = data?.author;
+    this.fields = data?.fields ?? [];
   }
 
   setTitle(title?: string) {

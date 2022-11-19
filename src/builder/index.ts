@@ -1,5 +1,6 @@
-export { MessageEmbed } from './MessageEmbed';
-export { DocBuilder } from './DocBuilder';
-export { ForumBuilder } from './ForumBuilder';
-export { ListBuilder } from './ListBuilder';
-export { CalendarBuilder } from './CalendarBuilder';
+export * from './MessageEmbed';
+export * from './DocBuilder';
+export * from './ForumBuilder';
+export * from './ListBuilder';
+export * from './CalendarBuilder';
+export * from './ChannelBuilder';

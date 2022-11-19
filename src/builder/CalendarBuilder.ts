@@ -11,16 +11,16 @@ export class CalendarBuilder {
   duration?: number;
   isPrivate?: boolean;
 
-  constructor(data: calendarBuilderOptions) {
-    this.name = data.name || 'New Event';
-    this.description = data.description;
-    this.location = data.location;
-    this.startsAt = data.startsAt;
-    this.url = data.url;
-    this.color = data.color;
-    this.rsvpLimit = data.limit;
-    this.duration = data.duration;
-    this.isPrivate = data.private;
+  constructor(data?: calendarBuilderOptions) {
+    this.name = data?.name || 'New Event';
+    this.description = data?.description;
+    this.location = data?.location;
+    this.startsAt = data?.startsAt;
+    this.url = data?.url;
+    this.color = data?.color;
+    this.rsvpLimit = data?.limit;
+    this.duration = data?.duration;
+    this.isPrivate = data?.isPrivate;
   }
 
   setName(name?: string) {
@@ -77,5 +77,5 @@ export type calendarBuilderOptions = {
   color?: ColorResolvable;
   limit?: number;
   duration?: number;
-  private?: boolean;
+  isPrivate?: boolean;
 };

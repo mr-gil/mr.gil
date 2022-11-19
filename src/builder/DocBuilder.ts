@@ -2,9 +2,9 @@ export class DocBuilder {
   content: string;
   title?: string;
 
-  constructor(data: docBuilderOptions) {
-    this.title = data.title || 'New Document';
-    this.content = data.content;
+  constructor(data?: docBuilderOptions) {
+    this.title = data?.title || 'New Document';
+    this.content = data?.content;
   }
 
   setTitle(title?: string) {

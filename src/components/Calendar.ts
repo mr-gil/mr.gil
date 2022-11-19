@@ -2,8 +2,11 @@ import {
   APICalendarEvent,
   APICalendarEventCancellation,
   APICalendarEventRsvp,
-  CalendarEventRsvpStatus
+  CalendarEventRsvpStatus,
+  Routes
 } from 'guilded-api-typings';
+import { CalendarBuilder } from '../builder';
+import { GuildedApiError } from '../errors/apiError';
 import { RsvpManager } from '../manager/RsvpManager';
 import { ColorResolvable, resolveColor } from '../misc/util';
 import { CalendarChannel } from './Channel';
@@ -74,6 +77,92 @@ export class Calendar {
   get author() {
     return this._obj.member;
   }
+
+  rsvp(
+    status:
+      | 'going'
+      | 'maybe'
+      | 'declined'
+      | 'invited'
+      | 'waitlisted'
+      | 'responded',
+    userId?: string
+  ) {
+    const link = Routes.calendarEventRsvp(
+      this.channelId,
+      this.id,
+      userId || this.channel.client.user.id
+    );
+
+    return new Promise(async (resolve) => {
+      try {
+        const {
+          calendarEventRsvp
+        }: { calendarEventRsvp: APICalendarEventRsvp } =
+          await this.channel.client.rest.post(link, {
+            body: JSON.stringify({ status: status || 'maybe' })
+          });
+
+        resolve(
+          new CalendarRsvp(calendarEventRsvp, {
+            channel: this.channel,
+            cal: this,
+            member: await this.channel.server.members.fetch(
+              calendarEventRsvp.createdBy,
+              calendarEventRsvp.serverId
+            )
+          })
+        );
+      } catch (err: any) {
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+
+  delete() {
+    const link = Routes.calendarEvent(this.channel.id, this.id);
+
+    return new Promise(async (resolve) => {
+      try {
+        await this.channel.client.rest.delete(link);
+
+        resolve(true);
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+
+  edit(cal: CalendarBuilder) {
+    const link = Routes.calendarEvent(this.channel.id, this.id);
+
+    return new Promise(async (resolve) => {
+      try {
+        if (!cal)
+          throw new GuildedApiError(
+            'You have not provided a CalendarBuilder as the argument.'
+          );
+
+        const { calendarEvent }: { calendarEvent: APICalendarEvent } =
+          await this.channel.client.rest.patch(link, {
+            body: JSON.stringify(cal)
+          });
+
+        resolve(
+          new Calendar(calendarEvent, {
+            channel: this.channel,
+            member: await this.channel.server.members.fetch(
+              calendarEvent.createdBy,
+              calendarEvent.serverId
+            )
+          })
+        );
+      } catch (err: any) {
+        throw new GuildedApiError(err);
+      }
+    });
+  }
 }
 
 export class CalendarRsvp {
@@ -109,6 +198,67 @@ export class CalendarRsvp {
 
   get calendar() {
     return this._obj.cal;
+  }
+
+  delete() {
+    const link = Routes.calendarEventRsvp(
+      this.channelId,
+      this.calendarEventId,
+      this.createdBy
+    );
+
+    return new Promise(async (resolve) => {
+      try {
+        await this.calendar.channel.client.rest.delete(link);
+
+        resolve(true);
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+
+  edit(
+    status:
+      | 'going'
+      | 'maybe'
+      | 'declined'
+      | 'invited'
+      | 'waitlisted'
+      | 'responded',
+    userId?: string
+  ) {
+    const link = Routes.calendarEventRsvp(
+      this.channelId,
+      this.calendar.id,
+      userId || this.calendar.channel.client.user.id
+    );
+
+    return new Promise(async (resolve) => {
+      try {
+        const {
+          calendarEventRsvp
+        }: { calendarEventRsvp: APICalendarEventRsvp } =
+          await this.calendar.channel.client.rest.post(link, {
+            body: JSON.stringify({ status: status || 'maybe' })
+          });
+
+        resolve(
+          new CalendarRsvp(calendarEventRsvp, {
+            channel: this.calendar.channel,
+            cal: this.calendar,
+            member: await this.calendar.channel.server.members.fetch(
+              calendarEventRsvp.createdBy,
+              calendarEventRsvp.serverId
+            )
+          })
+        );
+      } catch (err: any) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
   }
 }
 

@@ -121,6 +121,44 @@ export class BaseChannel {
   toString() {
     return `<#${this.id}>`;
   }
+
+  delete() {
+    const link = Routes.channel(this.id);
+
+    return new Promise(async (resolve) => {
+      try {
+        await this.client.rest.delete(link);
+
+        resolve(true);
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+
+  edit(obj: { name: string; topic: string; public: boolean }) {
+    const link = Routes.channel(this.id);
+
+    return new Promise(async (resolve) => {
+      try {
+        const data = {
+          name: obj.name || this.name,
+          topic: obj.topic || this.topic,
+          isPublic: obj.public || this.public
+        };
+        const { channel }: { channel: APIChannel } =
+          await this.client.rest.patch(link, {
+            body: JSON.stringify(data)
+          });
+
+        resolve(await this.client.channels.fetch(channel.id));
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
+  }
 }
 
 export class ChatChannel extends BaseChannel {
@@ -132,6 +170,30 @@ export class ChatChannel extends BaseChannel {
   ) {
     super(channel, obj, client);
     this.messages = new MessageManager(this);
+  }
+
+  fetchMessage(id: string) {
+    const link = Routes.message(this.id, id);
+
+    return new Promise(async (resolve) => {
+      try {
+        const { message }: { message: APIMessage } = await this.client.rest.get(
+          link
+        );
+
+        resolve(
+          new Message(message, {
+            channel: this,
+            member: await this.server.members.fetch(
+              message.createdBy,
+              this.server.id
+            )
+          })
+        );
+      } catch (err) {
+        throw new GuildedApiError(err);
+      }
+    });
   }
 
   fetchBulk(

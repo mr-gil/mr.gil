@@ -6,6 +6,8 @@ import {
   APIUserSummary,
   Routes
 } from 'guilded-api-typings';
+import { resolve } from 'path';
+import { ChannelBuilder } from '../builder/ChannelBuilder';
 import { Client } from '../Client';
 import { GuildedApiError } from '../errors/apiError';
 import {
@@ -95,6 +97,81 @@ export class Collection<K, V> extends Map<K, V> {
 }
 
 export class ChannelCollection extends Collection<string, AnyChannel> {
+  generate(channel: APIChannel): Promise<AnyChannel> {
+    return new Promise(async (resolve) => {
+      if (!channel || !channel.id)
+        return new GuildedApiError('Unknown Channel');
+
+      let server = await this.client.servers.fetch(channel.serverId);
+
+      let newObj: AnyChannel;
+
+      switch (channel.type) {
+        case 'docs':
+          newObj = new DocChannel(
+            channel,
+            {
+              server: server
+            },
+            this.client
+          ) as AnyChannel;
+          break;
+        case 'chat':
+          newObj = new ChatChannel(
+            channel,
+            {
+              server: server
+            },
+            this.client
+          ) as AnyChannel;
+
+          break;
+        case 'forums':
+          newObj = new ForumChannel(
+            channel,
+            {
+              server: server
+            },
+            this.client
+          ) as AnyChannel;
+
+          break;
+        case 'list':
+          newObj = new ListChannel(
+            channel,
+            {
+              server: server
+            },
+            this.client
+          ) as AnyChannel;
+          break;
+        case 'calendar':
+          newObj = new CalendarChannel(
+            channel,
+            {
+              server: server
+            },
+            this.client
+          ) as AnyChannel;
+          break;
+        default:
+          newObj = new BaseChannel(
+            channel,
+            {
+              server: server
+            },
+            this.client
+          ) as AnyChannel;
+      }
+
+      if (!newObj || !newObj.id) return new GuildedApiError('Unknown Channel');
+
+      this.set(newObj.id.toString(), newObj);
+
+      resolve(this.get(newObj.id));
+    });
+  }
+
   fetch(id: string): Promise<AnyChannel> {
     return new Promise(async (resolve, reject) => {
       let f: AnyChannel = this.get(id);
@@ -174,6 +251,35 @@ export class ChannelCollection extends Collection<string, AnyChannel> {
         f = this.get(id);
       }
       return resolve(f);
+    });
+  }
+
+  create(buildr: ChannelBuilder, serverId?: string) {
+    const link = Routes.channels;
+
+    return new Promise(async (resolve) => {
+      try {
+        if (serverId) buildr.setServer(serverId);
+        if (!buildr.type) buildr.setType('chat');
+
+        const { channel }: { channel: APIChannel } =
+          await this.client.rest.post(link, {
+            body: JSON.stringify(buildr)
+          });
+
+        resolve(
+          new BaseChannel(
+            channel,
+            {
+              server: await this.client.servers.fetch(channel.id)
+            },
+            this.client
+          )
+        );
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
     });
   }
 }

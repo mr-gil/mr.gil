@@ -1,103 +1,57 @@
 # Mr.Gil
 
+#### A powerful Guilded wrapper written in Typescript
+
+### Developed by Rahuletto#0243
+
+<br>
+<p>
+<a class="shield" href="https://www.npmjs.com/package/mr.gil"><img src="https://img.shields.io/npm/v/mr.gil.svg?style=for-the-badge" /></a> 
+ <a class="shield" href="https://www.npmjs.com/package/mr.gil"><img src="https://img.shields.io/npm/dt/mr.gil?style=for-the-badge" /></a>
+   <br></br>
+   <a class="shield" href="https://github.com/mr-gil/mr.gil"><img src="https://img.shields.io/badge/Mr.Gil-Github-121212?style=for-the-badge"/></a> 
+      <a class="shield" href="https://guilded.gg"><img src="https://img.shields.io/badge/Guilded-Support-f5c400?style=for-the-badge&logo=guilded"/></a>
+
+</p>
+
+## 🖥️ <b>How to install ?</b>
+
+(Use any one method)
+
 ```
-This is a work-in-progress project.
+npm install mr.gil
 ```
 
-### The future of Guilded wrapper..
+```
+yarn add mr.gil
+```
 
----
+```
+pnpm add mr.gil
+```
 
-# Coming soon.
+# 🎉 What's New 🎉
 
----
+- New package !
+- Tested all events
+- Fixed many bugs
+- Can add/set XPs.
 
-## Update
+<br></br>
 
-- Absorbing all Event name changes. now API Event names are changed. See the API Docs.
-- Many many events are here
-- 6 events pending
-- Everythings tested ! Fixed many bugs
+- ## 🗒 Documentation
+  - Not ready yet ;(
 
----
+<br></br>
 
-# What's Implemented ?
+# 🤔 But Why ?
 
-- !!! **34/40 Events** !!!
-
-### BotMember
-
-- BotServerMembershipCreated (botCreate event)
-
-### CalendarEvent
-
-- CalendarEventCreated (calendarCreate event)
-- CalendarEventUpdated (calendarUpdate event)
-- CalendarEventDeleted(calendarDelete event)
-
-### ChannelMessageReaction
-
-- ChannelMessageReactionCreated (messageReact event)
-- ChannelMessageReactionDeleted (messageUnreact event)
-
-### ChatMessage
-
-- ChatMessageCreated (messageCreate event)
-- ChatMessageDeleted (messageDelete event)
-- ChatMessageUpdated (messageUpdate event)
-
-### Doc
-
-- DocCreated (docCreate event)
-- DocUpdated (docUpdate event)
-- DocDeleted (docDelete event)
-
-### ForumTopic
-
-- ForumTopicCreated (topicCreate event)
-- ForumTopicUpdated (topicUpdate event)
-- ForumTopicDeleted (topicDelete event)
-- ForumTopicPinned (topicPin event)
-- ForumTopicUnpinned (topicUnpin event)
-- ForumTopicLocked (topicLock event)
-- ForumTopicUnlocked (topicUnlock event)
-
-### ForumTopicReaction
-
-- ForumTopicReactionCreated (topicReact event)
-- ForumTopicReactionDeleted (topicUnreact event)
-
-### ListItem
-
-- ListItemCreated (listCreate event)
-- ListItemUpdated (listUpdate event)
-- ListItemDeleted (listDelete event)
-- ListItemCompleted (listComplete event)
-- ListItemUncompleted (listUncomplete event)
-
-### ServerMember
-
-- ServerMemberJoined (memberJoin event)
-- ServerMemberRemoved (memberRemove event)
-- ServerMemberBanned (memberBan event)
-- ServerMemberUnbanned (memberUnban event)
-- ServerMemberUpdated (memberUpdate event)
-
-### ServerRoles
-
-- ServerRolesUpdated (roleUpdate event)
-
-### ServerWebhook
-
-- ServerWebhookCreated (webhookCreate event)
-- ServerWebhookUpdated (webhookUpdate event)
-
----
-
-# What's left
-
-- ### CalenderEventRsvp `(3 events)`
-- ### TeamChannel `(3 events)`
+- Beginner Friendly
+- Similar to Discord.JS
+- Easier yet Flexible.
+- Fastest Support ever
+- Better than other counterparts
+- Open source project !
 
 ---
 
@@ -110,5 +64,7 @@ You have experience developing bots in discord.js ?
 Don't worry,
 Its very similar to the discord.js v13 event names. We do provide better typings for event names. So no need of scrubbing the docs
 ```
+
+---
 
 ## We will finish this marvellous project soon ;)

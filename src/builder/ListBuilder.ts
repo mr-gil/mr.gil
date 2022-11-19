@@ -2,9 +2,9 @@ export class ListBuilder {
   message?: string;
   note?: { content?: string };
 
-  constructor(data: listBuilderOptions) {
-    this.message = data.message || 'New ListItem';
-    this.note = data.note;
+  constructor(data?: listBuilderOptions) {
+    this.message = data?.message || 'New ListItem';
+    this.note = data?.note;
   }
 
   setMessage(message?: string) {

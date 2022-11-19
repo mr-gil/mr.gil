@@ -2,9 +2,9 @@ export class ForumBuilder {
   content: string;
   title?: string;
 
-  constructor(data: forumBuilderOptions) {
-    this.title = data.title || 'New Topic';
-    this.content = data.content;
+  constructor(data?: forumBuilderOptions) {
+    this.title = data?.title || 'New Topic';
+    this.content = data?.content;
   }
 
   setTitle(title?: string) {

@@ -6,6 +6,7 @@ import {
 import { BaseManager, FetchOptions } from './BaseManager';
 
 import { Collection, CalendarChannel, Calendar } from '../components';
+import { ChannelBuilder } from '../builder/ChannelBuilder';
 
 export class CalendarManager extends BaseManager {
   readonly cache: Collection<number, Calendar>;

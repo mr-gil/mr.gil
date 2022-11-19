@@ -9,7 +9,9 @@ import { ServerWebhookEvents } from './ServerWebhookEvents';
 import { ForumTopicEvents } from './ForumTopicEvents';
 import { TopicReactionEvents } from './TopicReactionEvents';
 import {
+  AnyChannel,
   Calendar,
+  CalendarRsvp,
   Doc,
   Member,
   MemberBan,
@@ -23,6 +25,8 @@ import { ForumTopic, ForumTopicReaction } from '../components/ForumTopic';
 import { ListItem } from '../components/ListItem';
 import { ListItemEvents } from './ListItemEvents';
 import { CalendarEvents } from './CalendarEvents';
+import { RsvpEvents } from './RsvpEvents';
+import { ChannelEvents } from './ChannelEvents';
 
 export default function eventHandler(type: string, data: any, client: Client) {
   if (type.includes('ChatMessage')) MessageEvents(type, data, client);
@@ -40,7 +44,9 @@ export default function eventHandler(type: string, data: any, client: Client) {
     TopicReactionEvents(type, data, client);
   else if (type.includes('ForumTopic')) ForumTopicEvents(type, data, client);
   else if (type.includes('ListItem')) ListItemEvents(type, data, client);
+  else if (type.includes('CalendarEventRsvp')) RsvpEvents(type, data, client);
   else if (type.includes('CalendarEvent')) CalendarEvents(type, data, client);
+  else if (type.includes('ServerChannel')) ChannelEvents(type, data, client);
 }
 
 type gilEvents = {
@@ -102,6 +108,16 @@ type gilEvents = {
   calendarCreate: (cal: Calendar) => void;
   calendarUpdate: (cal: Calendar, oldCal: Calendar) => void;
   calendarDelete: (cal: Calendar) => void;
+
+  // rsvp events
+  rsvpUpdate: (rsvp: CalendarRsvp) => void;
+  rsvpBulkUpdate: (arr: CalendarRsvp[]) => void;
+  rsvpDelete: (rsvp: CalendarRsvp) => void;
+
+  // channel events
+  channelCreate: (ch: AnyChannel) => void;
+  channelDelete: (ch: AnyChannel) => void;
+  channelUpdate: (oldChannel: AnyChannel, ch: AnyChannel) => void;
 };
 
 type apiEvents = {
@@ -160,6 +176,16 @@ type apiEvents = {
   CalendarEventCreated: (cal: Calendar) => void;
   CalendarEventUpdated: (cal: Calendar, oldCal: Calendar) => void;
   CalendarEventDeleted: (cal: Calendar) => void;
+
+  // rsvp events
+  CalendarEventRsvpUpdated: (rsvp: CalendarRsvp) => void;
+  CalendarEventRsvpManyUpdated: (arr: CalendarRsvp[]) => void;
+  CalendarEventRsvpDeleted: (rsvp: CalendarRsvp) => void;
+
+  // channel events
+  ServerChannelCreated: (ch: AnyChannel) => void;
+  ServerChannelDeleted: (ch: AnyChannel) => void;
+  ServerChannelUpdated: (oldChannel: AnyChannel, ch: AnyChannel) => void;
 };
 
 export type clientEvents = apiEvents & gilEvents;

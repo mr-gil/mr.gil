@@ -2,13 +2,14 @@ import {
   APIEmote,
   APIServer,
   APIServerBan,
+  APIServerMember,
   Routes,
   ServerType
 } from 'guilded-api-typings';
 import { Client } from '../Client';
 import { Collection, MemberCollection } from './Collection';
 import { MemberBan } from './MemberBan';
-import { User } from './User';
+import { Member, User } from './User';
 import { GuildedApiError } from '../errors/apiError';
 
 export class Emote {
@@ -32,6 +33,7 @@ export class Emote {
 }
 
 export class BaseServer {
+  private _client: Client;
   about: string;
   avatar: string;
   banner: string;
@@ -76,6 +78,53 @@ export class BaseServer {
       enumerable: false,
       writable: false,
       value: new Bans(this, client)
+    });
+    Object.defineProperty(this, '_client', {
+      enumerable: false,
+      writable: false,
+      value: client
+    });
+  }
+
+  fetchBulk() {
+    const link = Routes.serverMembers(this.id);
+
+    return new Promise(async (resolve) => {
+      try {
+        const { members }: { members: APIServerMember[] } =
+          await this._client.rest.get(link);
+
+        const col = new Collection([], { client: this._client });
+        members.forEach(async (m: APIServerMember) => {
+          const mem = new Member(m, {
+            server: this,
+            user: await this._client.users.fetch({}, m.user)
+          });
+
+          col.set(mem.id, mem);
+        });
+
+        resolve(col);
+      } catch (err) {
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+
+  setRoleXp(amount: number, roleId: number) {
+    const link = Routes.serverRoleXp(this.id, roleId);
+
+    return new Promise(async (resolve) => {
+      try {
+        await this._client.rest.post(link, {
+          body: JSON.stringify({ amount: amount })
+        });
+
+        resolve(true);
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
     });
   }
 }
