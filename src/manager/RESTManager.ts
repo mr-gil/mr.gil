@@ -108,8 +108,8 @@ export class RESTManager extends (EventEmitter as unknown as new () => TypedEmit
             try {
               if (!body) return;
               const json = JSON.parse(body);
-              if (json.code) reject(JSON.stringify(json));
-              else resolve(json);
+              // if (json.code) throw new GuildedApiError(JSON.stringify(json)); else
+              resolve(json);
             } catch (e: any) {
               if (e instanceof SyntaxError) {
                 return;
@@ -133,6 +133,7 @@ export class RESTManager extends (EventEmitter as unknown as new () => TypedEmit
     path: string,
     params?: P
   ) {
+    if (params) path = path + '?';
     return this.https<R, any, P>(path, 'GET', { params });
   }
 

@@ -314,18 +314,19 @@ export class MemberCollection extends Collection<string, Member> {
     return new Promise(async (resolve, reject) => {
       let f = this.get(id);
       if (!f) {
-        const { member }: { member: APIServerMember } =
-          await this.client.rest.get(Routes.serverMember(serverId, id));
+        const obj = await this.client.rest.get(
+          Routes.serverMember(serverId, id)
+        );
 
-        if (!member || !member.user)
-          return new GuildedApiError('Unknown User/Member');
+        const member = obj.member;
+
+        if (!member || !member.user) return resolve(undefined);
         const newObj = new Member(member, {
           server: await this.client.servers.fetch(serverId),
           user: await this.client.users.fetch({}, member.user)
         });
 
-        if (!newObj || !newObj.id)
-          return new GuildedApiError('Unknown User/Member');
+        if (!newObj || !newObj.id) return resolve(undefined);
 
         this.set(id.toString(), newObj);
 

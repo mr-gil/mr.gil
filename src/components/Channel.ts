@@ -172,6 +172,22 @@ export class ChatChannel extends BaseChannel {
     this.messages = new MessageManager(this);
   }
 
+  bulkDelete(amount: number) {
+    return new Promise(async (resolve) => {
+      try {
+        const msgs = await this.fetchBulk({ limit: amount });
+
+        msgs.forEach(async (m) => {
+          m.delete();
+        });
+        resolve(true);
+      } catch (err) {
+        resolve(false);
+        throw new GuildedApiError(err);
+      }
+    });
+  }
+
   fetchMessage(id: string) {
     const link = Routes.message(this.id, id);
 
@@ -203,7 +219,7 @@ export class ChatChannel extends BaseChannel {
       limit?: number;
       includePrivate?: boolean;
     } = { limit: 25 }
-  ) {
+  ): Promise<Collection<string, Message>> {
     const link = Routes.messages(this.id);
 
     if (options.limit > 100) options.limit = 100;
@@ -215,7 +231,9 @@ export class ChatChannel extends BaseChannel {
             body: JSON.stringify(options)
           });
 
-        const msgs = new Collection([], { client: this.client });
+        const msgs: Collection<string, Message> = new Collection([], {
+          client: this.client
+        });
 
         messages.forEach(async (m) => {
           const msg = new Message(m, {
