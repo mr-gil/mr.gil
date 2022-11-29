@@ -32,15 +32,16 @@ pnpm add mr.gil
 
 # 🎉 What's New 🎉
 
-- New package !
-- Tested all events
-- Fixed many bugs
-- Can add/set XPs.
+- Added `BotServerMembershipDeleted` event
+- Ratelimiting to 2 minutes.
+- Better Verbose logging with `debug` event.
+- Bug fixes
+- Kinda Full release
 
 <br></br>
 
 - ## 🗒 Documentation
-  - Not ready yet ;(
+  - 40% ready ;(
 
 <br></br>
 
@@ -67,4 +68,4 @@ Its very similar to the discord.js v13 event names. We do provide better typings
 
 ---
 
-## We will finish this marvellous project soon ;)
+## We will finish this marvellous project very soon ;)

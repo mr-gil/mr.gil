@@ -1,4 +1,4 @@
-import { APIServerBan } from 'guilded-api-typings/typings';
+import { APIServerBan } from 'guilded-api-typings';
 import { User } from './User';
 
 export class MemberBan {

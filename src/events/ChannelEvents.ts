@@ -1,4 +1,4 @@
-import { APIChannel } from 'guilded-api-typings/typings';
+import { APIChannel } from 'guilded-api-typings';
 import { Client } from '../Client';
 import { AnyChannel } from '../components';
 
@@ -17,7 +17,7 @@ export async function ChannelEvents(
     const channel: AnyChannel = await client.channels.generate(data.channel);
 
     client.emit('channelUpdate', oldChannel, channel);
-    client.emit('ServerChannelUpdated', oldChannel, channel);
+    client.emit('ServerChannelUpdated', channel, oldChannel);
   } else if (type === 'ServerChannelDeleted') {
     const channel: AnyChannel = await client.channels.generate(data.channel);
 

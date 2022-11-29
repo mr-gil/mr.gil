@@ -1,4 +1,4 @@
-import { APIListItem } from 'guilded-api-typings/typings';
+import { APIListItem } from 'guilded-api-typings';
 import { Client } from '../Client';
 import { ListChannel } from '../components';
 import { ListItem } from '../components/ListItem';

@@ -1,4 +1,5 @@
 import { APIError } from 'guilded-api-typings';
+import { IncomingHttpHeaders } from 'node:http';
 
 export class GuildedApiError extends Error {
   /**
@@ -27,3 +28,19 @@ export class GuildedApiError extends Error {
 Object.defineProperty(GuildedApiError.prototype, 'name', {
   value: 'GuildedApiError'
 });
+
+export type debugError = {
+  hostname: string;
+  path: string;
+  complete: boolean;
+  header: IncomingHttpHeaders;
+  body: any;
+  response: any;
+  status: {
+    code: number;
+    message: string;
+  };
+  error: Error;
+  httpVersion: string;
+  method: string;
+};

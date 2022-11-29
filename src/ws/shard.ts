@@ -2,8 +2,8 @@ import ws from 'ws';
 import { Client } from '../Client';
 import { GuildedApiError } from '../errors/apiError';
 
-const version = '0.0.1';
-const userAgent = `Mr.Gil (guilded, ${version})`;
+import { userAgent } from '../manager';
+import { dispatch } from '../misc/dispatch';
 
 /**
  * The Shard class that is just used for Websocket connection
@@ -72,8 +72,7 @@ export class shard extends ws {
         data.toString()
       );
 
-      const jsondata = { eventType, eventData };
-      this.client.interact(jsondata);
+      dispatch(eventType, eventData, client);
     });
 
     this.on('close', () => {

@@ -145,7 +145,7 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<c
   /**
    * Processes the data string to JSON Object `(not useful for end-user)`
    * @param {string} [data]
-   * @returns {any} Objext/String
+   * @returns {any} Object/String
    * @example
    * client.processData('{"hello": "world"}')
    * @ignore
@@ -156,20 +156,6 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<c
     } catch (e) {
       return data;
     }
-  }
-
-  /**
-   * Fires an event based on the data. `(DO NOT USE IT)`
-   * @returns {void} void
-   * @param data
-   * @example
-   * client.interact(jsonData)
-   * @ignore
-   */
-  interact(data: any): void {
-    const { eventType, eventData } = data;
-
-    dispatch(eventType, eventData, this);
   }
 
   /**

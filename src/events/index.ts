@@ -2,7 +2,7 @@ import { Client } from '../Client';
 import { MessageEvents } from './MessageEvents';
 import { ServerMemberEvents } from './ServerMemberEvents';
 import { DocEvents } from './DocEvents';
-import { botCreate, BotMemberEvent } from './BotMemberEvent';
+import { botCreate, botDelete, BotMemberEvent } from './BotMemberEvent';
 import { roleUpdate, ServerRolesEvent } from './ServerRolesEvent';
 import { MessageReactionEvents } from './MessageReactionEvents';
 import { ServerWebhookEvents } from './ServerWebhookEvents';
@@ -27,13 +27,14 @@ import { ListItemEvents } from './ListItemEvents';
 import { CalendarEvents } from './CalendarEvents';
 import { RsvpEvents } from './RsvpEvents';
 import { ChannelEvents } from './ChannelEvents';
+import { debugError } from '../errors/apiError';
 
 export default function eventHandler(type: string, data: any, client: Client) {
   if (type.includes('ChatMessage')) MessageEvents(type, data, client);
   else if (type.includes('ServerMember'))
     ServerMemberEvents(type, data, client);
   else if (type.includes('Doc')) DocEvents(type, data, client);
-  else if (type == 'BotServerMembershipCreated')
+  else if (type.includes('BotServerMembership'))
     BotMemberEvent(type, data, client);
   else if (type == 'ServerRolesUpdated') ServerRolesEvent(type, data, client);
   else if (type.includes('ChannelMessageReaction'))
@@ -52,6 +53,7 @@ export default function eventHandler(type: string, data: any, client: Client) {
 type gilEvents = {
   ready: () => void;
   error: (err: Error) => void;
+  debug: (obj: debugError) => void;
   // ----------------------
   // MR.GIL EVENTS
   // ----------------------
@@ -70,11 +72,11 @@ type gilEvents = {
   roleUpdate: (update: roleUpdate) => void;
   // Server member events
   memberJoin: (member: Member) => void;
-  memberKick: (user: User) => void;
+  memberUpdate: (oldMember: Member, newMember: Member) => void;
   memberRemove: (user: User) => void;
+  memberKick: (user: User) => void;
   memberBan: (ban: MemberBan | APIServerBan) => void;
   memberUnban: (ban: MemberBan | APIServerBan) => void;
-  memberUpdate: (oldMember: Member, newMember: Member) => void;
 
   // webhook events
   webhookCreate: (webhook: Webhook) => void;
@@ -82,6 +84,7 @@ type gilEvents = {
 
   // bot create events
   botCreate: (bot: botCreate) => void;
+  botDelete: (bot: botDelete) => void;
   // doc events
   docCreate: (doc: Doc) => void;
   docUpdate: (olddoc: Doc | {}, newDoc: Doc) => void;
@@ -117,7 +120,7 @@ type gilEvents = {
   // channel events
   channelCreate: (ch: AnyChannel) => void;
   channelDelete: (ch: AnyChannel) => void;
-  channelUpdate: (oldChannel: AnyChannel, ch: AnyChannel) => void;
+  channelUpdate: (ch: AnyChannel, oldChannel: AnyChannel) => void;
 };
 
 type apiEvents = {
@@ -149,7 +152,7 @@ type apiEvents = {
   ServerWebhookUpdated: (oldwebhook: Webhook, webhook: Webhook) => void;
   // bot create events
   BotServerMembershipCreated: (bot: botCreate) => void;
-
+  BotServerMembershipDeleted: (bot: botDelete) => void;
   // doc events
   DocCreated: (doc: Doc) => void;
   DocUpdated: (olddoc: Doc | {}, newDoc: Doc) => void;

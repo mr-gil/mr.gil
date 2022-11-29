@@ -6,8 +6,11 @@ import { Client } from '../Client';
 import type TypedEmitter from 'typed-emitter';
 import { IncomingMessage } from 'http';
 
-const version = '0.0.1';
-const userAgent = `Mr.Gil (guilded, ${version})`;
+const version = '1.0.0';
+export const userAgent = `Mr.Gil (guilded, v${version} | nodejs: ${process.version})`;
+
+let ratelimit = false;
+let rateTime = 0;
 
 export class RESTManager extends (EventEmitter as unknown as new () => TypedEmitter<{
   raw: (body: string, data: IncomingMessage) => void;
@@ -54,6 +57,10 @@ export class RESTManager extends (EventEmitter as unknown as new () => TypedEmit
     retries = 0
   ): Promise<R> {
     return new Promise(async (resolve, reject) => {
+      if (ratelimit)
+        return console.log(
+          `\nGuildedAPIError: Ratelimited !\n\nGuilded has rate-limited your requests. Try again after ${rateTime}ms.\n`
+        );
       const searchParams = new URLSearchParams();
       if (options?.params)
         for (const [key, value] of Object.entries(options.params))
@@ -77,7 +84,45 @@ export class RESTManager extends (EventEmitter as unknown as new () => TypedEmit
         },
         async (response) => {
           var body = '';
+
+          if (
+            response.statusCode === 429 &&
+            retries <= (this.options?.maxRetries ?? 3)
+          ) {
+            const retryAfter =
+              Number(response.headers['retry-after']) ??
+              this.options.retryInterval ??
+              120000 / 1000;
+
+            rateTime = retryAfter * 1000;
+            ratelimit = true;
+            await new Promise((resolve) =>
+              setTimeout(resolve, retryAfter * 1000)
+            );
+
+            ratelimit = false;
+            return this.https(path, method, options, retries++);
+          }
+
           response.on('error', (error: APIError) => {
+            response.headers['authorization'] = '';
+            this.client.emit('debug', {
+              hostname: options?.host || `www.guilded.gg`,
+              path:
+                options?.uri || `/api/v${this.version}` + path + searchParams,
+              complete: response.complete,
+              header: response.headers,
+              body: options?.body,
+              response: JSON.parse(body),
+              status: {
+                code: response.statusCode,
+                message: response.statusMessage
+              },
+              error: response.errored,
+              httpVersion: response.httpVersion,
+              method: response.method
+            });
+            response.destroy();
             throw new GuildedApiError(error);
           });
 
@@ -90,26 +135,32 @@ export class RESTManager extends (EventEmitter as unknown as new () => TypedEmit
             }
           });
 
-          if (
-            response.statusCode === 429 &&
-            retries <= (this.options?.maxRetries ?? 3)
-          ) {
-            const retryAfter =
-              Number(response.headers['retry-after']) ??
-              this.options.retryInterval ??
-              30000 / 1000;
-            await new Promise((resolve) =>
-              setTimeout(resolve, retryAfter * 1000)
-            );
-            return this.https(path, method, options, retries++);
-          }
-
           response.on('end', () => {
             try {
               if (!body) return;
               const json = JSON.parse(body);
-              // if (json.code) throw new GuildedApiError(JSON.stringify(json)); else
-              resolve(json);
+              if (json.code) {
+                response.headers['authorization'] = '';
+                this.client.emit('debug', {
+                  hostname: options?.host || `www.guilded.gg`,
+                  path:
+                    options?.uri ||
+                    `/api/v${this.version}` + path + searchParams,
+                  complete: response.complete,
+                  header: response.headers,
+                  body: options?.body,
+                  response: JSON.parse(body),
+                  status: {
+                    code: response.statusCode,
+                    message: response.statusMessage
+                  },
+                  error: response.errored,
+                  httpVersion: response.httpVersion,
+                  method: response.method
+                });
+                response.destroy();
+                throw new GuildedApiError(JSON.stringify(json));
+              } else resolve(json);
             } catch (e: any) {
               if (e instanceof SyntaxError) {
                 return;
@@ -120,9 +171,6 @@ export class RESTManager extends (EventEmitter as unknown as new () => TypedEmit
         }
       );
 
-      req.on('error', (err) => {
-        throw new GuildedApiError(err);
-      });
       if (options?.body) req.write(options.body);
 
       req.end(JSON.stringify);
